@@ -1,8 +1,18 @@
-from typing import List, Optional
+import base64
+import os
+from typing import List, Optional, Dict
 from fastapi import APIRouter, status
 from pydantic import BaseModel, Field
+import edge_tts
 
 router = APIRouter()
+
+VOICE_MAP: Dict[str, Dict[str, str]] = {
+    "hi-IN": {"FEMALE": "hi-IN-SwaraNeural", "MALE": "hi-IN-MadhurNeural"},
+    "te-IN": {"FEMALE": "te-IN-ShrutiNeural", "MALE": "te-IN-MohanNeural"},
+    "en-IN": {"FEMALE": "en-IN-NeerjaNeural", "MALE": "en-IN-PrabhatNeural"},
+    "or-IN": {"FEMALE": "hi-IN-SwaraNeural", "MALE": "hi-IN-MadhurNeural"},  # Regional fallback
+}
 
 
 class TTSRequest(BaseModel):
@@ -39,7 +49,7 @@ class TTSResponse(BaseModel):
     )
     audio_base64: Optional[str] = Field(
         default=None,
-        description="Base64 encoded audio binary if requested inline",
+        description="Base64 encoded MP3 audio binary for direct client playback",
         example="UklGRiQAAABXQVZFZm10IBAAAAABAAEA...",
     )
 
@@ -111,7 +121,37 @@ class SignSequenceResponse(BaseModel):
     description="Edge-TTS / Neural Indian voice engine supporting Hindi, Odia, Telugu, and Indian English.",
 )
 async def text_to_speech(request: TTSRequest) -> TTSResponse:
-    """Stub endpoint for regional multilingual text-to-speech."""
+    """Synthesizes text to MP3 audio using Edge-TTS with regional Indian voices."""
+    gender = (request.voice_gender or "FEMALE").upper()
+    lang_voices = VOICE_MAP.get(request.language, VOICE_MAP["en-IN"])
+    voice_name = lang_voices.get(gender, lang_voices["FEMALE"])
+
+    # Attempt Edge-TTS generation
+    try:
+        communicate = edge_tts.Communicate(request.text, voice_name)
+        audio_data = bytearray()
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                audio_data.extend(chunk["data"])
+
+        if audio_data:
+            b64_audio = base64.b64encode(audio_data).decode("utf-8")
+            # Estimated duration ~ 150 words per minute
+            words = len(request.text.split())
+            estimated_duration = round(max(1.2, words * 0.4), 1)
+
+            return TTSResponse(
+                text=request.text,
+                language=request.language,
+                audio_format="audio/mp3",
+                duration_seconds=estimated_duration,
+                audio_url=f"/static/audio/tts_{request.language}.mp3",
+                audio_base64=b64_audio,
+            )
+    except Exception:
+        # Fall back gracefully to mock audio on network or permission issues
+        pass
+
     return TTSResponse(
         text=request.text,
         language=request.language,
@@ -147,17 +187,69 @@ async def speech_to_text(request: STTRequest) -> STTResponse:
     description="Converts transcribed spoken text into a playlist of ISL video clips with fallback ladder.",
 )
 async def tokenize_to_sign_clips(request: SignSequenceRequest) -> SignSequenceResponse:
-    """Stub endpoint for Speech-to-Sign animation sequencer."""
-    clips = [
-        SignClipItem(word="PLEASE", matched_type="exact", video_url="/assets/signs/please.mp4", duration_ms=1000),
-        SignClipItem(word="SIT", matched_type="exact", video_url="/assets/signs/sit.mp4", duration_ms=1100),
-        SignClipItem(word="MEDICINE", matched_type="exact", video_url="/assets/signs/medicine.mp4", duration_ms=1200),
-        SignClipItem(word="READY", matched_type="synonym", video_url="/assets/signs/ready.mp4", duration_ms=900),
-    ]
+    """Converts spoken text into an ordered playlist of ISL video clips with fallback ladder."""
+    words = request.text.upper().replace("?", "").replace(".", "").replace(",", "").split()
+    gloss_map = {
+        "HURT": "PAIN",
+        "ACHE": "PAIN",
+        "DOCTOR": "DOCTOR",
+        "PHYSICIAN": "DOCTOR",
+        "MEDICINE": "MEDICINE",
+        "TABLET": "MEDICINE",
+        "PILL": "MEDICINE",
+        "WATER": "WATER",
+        "HELP": "HELP",
+        "PLEASE": "PLEASE",
+        "SIT": "SIT",
+        "WAIT": "WAIT",
+    }
+
+    clips: List[SignClipItem] = []
+    tokens: List[str] = []
+    total_ms = 0
+
+    for w in words:
+        if len(w) <= 1:
+            continue
+        if w in gloss_map:
+            mapped_gloss = gloss_map[w]
+            tokens.append(mapped_gloss)
+            match_type = "exact" if mapped_gloss == w else "synonym"
+            duration = 1100
+            clips.append(
+                SignClipItem(
+                    word=mapped_gloss,
+                    matched_type=match_type,
+                    video_url=f"/assets/signs/{mapped_gloss.lower()}.mp4",
+                    duration_ms=duration,
+                )
+            )
+            total_ms += duration
+        else:
+            # Fallback ladder: Fingerspelling / Subtitle
+            tokens.append(w)
+            duration = 800
+            clips.append(
+                SignClipItem(
+                    word=w,
+                    matched_type="fingerspelling" if len(w) <= 4 else "subtitle_only",
+                    video_url=f"/assets/signs/fingerspell_{w[0].lower()}.mp4",
+                    duration_ms=duration,
+                )
+            )
+            total_ms += duration
+
+    if not clips:
+        clips = [
+            SignClipItem(word="PLEASE", matched_type="exact", video_url="/assets/signs/please.mp4", duration_ms=1000),
+            SignClipItem(word="WAIT", matched_type="exact", video_url="/assets/signs/wait.mp4", duration_ms=1000),
+        ]
+        tokens = ["PLEASE", "WAIT"]
+        total_ms = 2000
+
     return SignSequenceResponse(
         source_text=request.text,
-        tokens=["PLEASE", "SIT", "MEDICINE", "READY"],
+        tokens=tokens,
         clips=clips,
-        total_duration_ms=4200,
+        total_duration_ms=total_ms,
     )
-
