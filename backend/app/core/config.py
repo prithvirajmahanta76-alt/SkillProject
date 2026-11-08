@@ -1,6 +1,10 @@
 import os
 from typing import List
+from dotenv import load_dotenv
 from pydantic import BaseModel, Field
+
+# Load local environment variables from .env file
+load_dotenv()
 
 
 class Settings(BaseModel):
@@ -36,4 +40,3 @@ class Settings(BaseModel):
 
 
 settings = Settings()
-

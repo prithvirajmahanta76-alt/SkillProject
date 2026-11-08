@@ -7,6 +7,7 @@ ENV/
 
 # Python
 __pycache__/
+*.pyc
 *.py[cod]
 *$py.class
 *.pyd
@@ -26,7 +27,8 @@ htmlcov/
 Thumbs.db
 desktop.ini
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 *.swp
 *.swo
 
@@ -35,4 +37,3 @@ dist/
 dist-ssr/
 build/
 *.egg-info/
-
