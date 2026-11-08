@@ -31,47 +31,47 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    subgraph Client ["Client (React + Vite + Tailwind)"]
+    subgraph Client ["Client - React + Vite + Tailwind"]
         direction TB
-        CAM["Webcam (WebRTC)"]
-        MIC["Microphone (Audio Stream)"]
-        UI_PATIENT["Patient Interface<br/>(Camera / Avatar Player)"]
-        UI_DOCTOR["Doctor Interface<br/>(Voice / Subtitles / Controls)"]
+        CAM["Webcam - WebRTC"]
+        MIC["Microphone - Audio Stream"]
+        UI_PATIENT["Patient Interface<br/>Camera / Avatar Player"]
+        UI_DOCTOR["Doctor Interface<br/>Voice / Subtitles / Controls"]
     end
 
     subgraph EdgeAI ["Client-Side Edge Preprocessing"]
-        MP_HANDS["MediaPipe Hands (21 3D Landmarks)"]
-        MP_FACE["MediaPipe Face Mesh (Eye Blink & Head Pose)"]
+        MP_HANDS["MediaPipe Hands - 21 3D Landmarks"]
+        MP_FACE["MediaPipe Face Mesh - Eye Blink & Head Pose"]
     end
 
     subgraph Backend ["FastAPI Intelligent Backend"]
         direction TB
-        GESTURE_ENGINE["ISL Gesture Classifier<br/>(25 Core Signs, <30ms)"]
+        GESTURE_ENGINE["ISL Gesture Classifier<br/>25 Core Signs, under 30ms"]
         GEMINI_LLM["Gemini 1.5 Context & Grammar Engine"]
         GEMINI_VISION["Gemini Vision Medicine & Sign Reader"]
         SPEECH_SVC["Multilingual STT & TTS Engine"]
         SIGN_SEQ["Sign Tokenizer & Video Sequencer"]
     end
 
-    subgraph Storage ["Cloud & Cache (Firebase)"]
+    subgraph Storage ["Cloud & Cache - Firebase"]
         DB[("Firestore Database")]
-        ASSETS[("ISL Video/3D Clip Library")]
+        ASSETS[("ISL Video & 3D Clip Library")]
     end
 
     CAM --> MP_HANDS & MP_FACE
-    MP_HANDS -->|"Normalized Coordinates"| GESTURE_ENGINE
-    MP_FACE -->|"EAR & Head Angles"| GESTURE_ENGINE
-    GESTURE_ENGINE -->|"Sign Tokens"| GEMINI_LLM
-    GEMINI_LLM -->|"Synthesized Sentences"| SPEECH_SVC
-    SPEECH_SVC -->|"Voice Audio & Text"| UI_DOCTOR
+    MP_HANDS -->|Normalized Coordinates| GESTURE_ENGINE
+    MP_FACE -->|EAR & Head Angles| GESTURE_ENGINE
+    GESTURE_ENGINE -->|Sign Tokens| GEMINI_LLM
+    GEMINI_LLM -->|Synthesized Sentences| SPEECH_SVC
+    SPEECH_SVC -->|Voice Audio & Text| UI_DOCTOR
 
-    MIC -->|"Audio Stream"| SPEECH_SVC
-    SPEECH_SVC -->|"Transcribed Text"| SIGN_SEQ
-    SIGN_SEQ -->|"Sign Sequence"| UI_PATIENT
-    ASSETS -.->|"Pre-cached clips"| UI_PATIENT
+    MIC -->|Audio Stream| SPEECH_SVC
+    SPEECH_SVC -->|Transcribed Text| SIGN_SEQ
+    SIGN_SEQ -->|Sign Sequence| UI_PATIENT
+    ASSETS -.->|Pre-cached clips| UI_PATIENT
 
-    CAM -->|"Snapshots (Blind Mode)"| GEMINI_VISION
-    GEMINI_VISION -->|"Dosage & Directions"| SPEECH_SVC
+    CAM -->|Snapshots - Blind Mode| GEMINI_VISION
+    GEMINI_VISION -->|Dosage & Directions| SPEECH_SVC
     UI_PATIENT & UI_DOCTOR <--> DB
 ```
 
