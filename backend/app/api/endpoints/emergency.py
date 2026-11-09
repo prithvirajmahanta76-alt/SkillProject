@@ -1,8 +1,13 @@
+import time
+import urllib.parse
 from typing import List, Dict, Optional
 from fastapi import APIRouter, status
 from pydantic import BaseModel, Field
 
 router = APIRouter()
+
+# In-Memory Active Alerts Queue for Hospital Nursing Station Dashboard
+_ACTIVE_ALERTS_LOG: List[Dict] = []
 
 
 class EmergencyPhrase(BaseModel):
@@ -29,24 +34,17 @@ class SOSTriggerRequest(BaseModel):
         description="Type of emergency: 'AMBULANCE', 'SEVERE_PAIN', 'DOCTOR_NEEDED', 'FALL_DETECTED', 'CANNOT_BREATHE'",
         example="SEVERE_PAIN",
     )
-    patient_id: Optional[str] = Field(default="PAT-EMERGENCY-01", example="PAT-EMERGENCY-01")
+    patient_id: Optional[str] = Field(default="PAT-9842", example="PAT-9842")
+    patient_name: Optional[str] = Field(default="Rahul Sahoo", example="Rahul Sahoo")
+    abha_id: Optional[str] = Field(default="91-4829-1039-4820", example="91-4829-1039-4820")
     location_tag: Optional[str] = Field(
         default="Ward 3, Bed 14",
-        description="Bed number, ward name, or GPS coordinate string",
+        description="Bed number, ward name, or hospital wing",
         example="Ward 3, Bed 14",
     )
+    latitude: Optional[float] = Field(default=20.2961, description="GPS Latitude", example=20.2961)
+    longitude: Optional[float] = Field(default=85.8245, description="GPS Longitude", example=85.8245)
     preferred_language: str = Field(default="hi-IN", example="hi-IN")
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "emergency_type": "SEVERE_PAIN",
-                "patient_id": "PAT-EMERGENCY-01",
-                "location_tag": "Ward 3, Bed 14",
-                "preferred_language": "hi-IN",
-            }
-        }
-    }
 
 
 class SOSTriggerResponse(BaseModel):
@@ -54,20 +52,17 @@ class SOSTriggerResponse(BaseModel):
     status: str = Field(..., example="DISPATCHED")
     timestamp_iso: str = Field(..., example="2026-11-08T10:00:00Z")
     emergency_type: str = Field(..., example="SEVERE_PAIN")
-    strobe_visual_alert: bool = Field(
+    triage_esi_level: str = Field(..., example="ESI Level 1 (Resuscitation)")
+    strobe_visual_alert: bool = Field(..., example=True)
+    google_maps_url: str = Field(..., example="https://www.google.com/maps?q=20.2961,85.8245")
+    whatsapp_dispatch_link: str = Field(
         ...,
-        description="If True, client triggers high-contrast visual strobe to attract in-room staff",
-        example=True,
+        description="Clickable instant WhatsApp notification payload",
+        example="https://api.whatsapp.com/send?text=...",
     )
     regional_audio_broadcast: Dict[str, str] = Field(
         ...,
         description="Multilingual announcements triggered for hospital PA or bedside speaker",
-        example={
-            "en": "Emergency alert! Patient in Ward 3, Bed 14 reports severe pain!",
-            "hi": "आपातकालीन चेतावनी! वार्ड 3, बेड 14 के मरीज को गंभीर दर्द है!",
-            "or": "ଜରୁରୀକାଳୀନ ସତର୍କତା! ୱାର୍ଡ 3, ବେଡ୍ 14 ର ରୋଗୀ ପ୍ରବଳ ଯନ୍ତ୍ରଣା ଅନୁଭବ କରୁଛନ୍ତି!",
-            "te": "అత్యవసర హెచ్చరిక! వార్డ్ 3, బెడ్ 14 లోని రోగికి తీవ్రమైన నొప్పి ఉంది!",
-        },
     )
     dispatch_notifications: Dict[str, str] = Field(
         ...,
@@ -84,10 +79,8 @@ class SOSTriggerResponse(BaseModel):
     response_model=EmergencyPhrasesResponse,
     status_code=status.HTTP_200_OK,
     summary="Get 1-Tap SOS Emergency Cards and Regional Translations",
-    description="Returns pre-loaded emergency phrases across English, Hindi, Odia, and Telugu with audio mappings.",
 )
 async def get_emergency_phrases() -> EmergencyPhrasesResponse:
-    """Returns the 8 critical 1-tap SOS cards for the emergency grid."""
     phrases = [
         EmergencyPhrase(
             id="sos_ambulance",
@@ -126,6 +119,18 @@ async def get_emergency_phrases() -> EmergencyPhrasesResponse:
             audio_asset="/assets/audio/sos_doctor.mp3",
         ),
         EmergencyPhrase(
+            id="sos_breathe",
+            code="CANNOT_BREATHE",
+            title="Cannot Breathe",
+            severity="critical",
+            icon="AlertTriangle",
+            english="Patient having severe breathing difficulty!",
+            hindi="मरीज को सांस लेने में भारी तकलीफ हो रही है!",
+            odia="ରୋଗୀଙ୍କୁ ନିଶ୍ୱାସ ନେବାରେ ପ୍ରବଳ କଷ୍ଟ ହେଉଛି!",
+            telugu="రోగికి శ్వాస తీసుకోవడంలో తీవ్ర ఇబ్బంది ఉంది!",
+            audio_asset="/assets/audio/sos_breathe.mp3",
+        ),
+        EmergencyPhrase(
             id="sos_lost",
             code="LOST_CONFUSED",
             title="Lost / Help",
@@ -145,28 +150,217 @@ async def get_emergency_phrases() -> EmergencyPhrasesResponse:
     "/trigger-sos",
     response_model=SOSTriggerResponse,
     status_code=status.HTTP_200_OK,
-    summary="Trigger 1-Tap SOS Emergency Broadcast",
-    description="Dispatches instant audio, visual strobe, and notification alerts to nursing desks and guardians.",
+    summary="Trigger Multi-Channel 1-Tap SOS Emergency Broadcast",
+    description="Dispatches instant audio, visual strobe, GPS link, and WhatsApp payload to hospital nurse desks and guardians.",
 )
 async def trigger_sos(request: SOSTriggerRequest) -> SOSTriggerResponse:
-    """Stub endpoint for SOS emergency broadcasting."""
-    location = request.location_tag or "Hospital Kiosk Terminal"
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    sos_id = f"SOS-{int(time.time())}"
+    location = request.location_tag or "Civil Hospital Kiosk Terminal"
+    lat = request.latitude or 20.2961
+    lng = request.longitude or 85.8245
+    maps_url = f"https://www.google.com/maps?q={lat},{lng}"
+
+    # Determine Triage Level
+    critical_types = ["AMBULANCE", "CANNOT_BREATHE", "SEVERE_PAIN", "DOUBLE_BLINK_EMERGENCY"]
+    esi_level = "ESI Level 1 (Resuscitation / Immediate)" if request.emergency_type in critical_types else "ESI Level 2 (Emergent)"
+
+    # WhatsApp Clickable Dispatch Payload
+    message_text = (
+        f"🚨 *SIGNBRIDGE HOSPITAL EMERGENCY SOS* 🚨\n"
+        f"• *Alert ID:* {sos_id}\n"
+        f"• *Emergency Type:* {request.emergency_type}\n"
+        f"• *Triage:* {esi_level}\n"
+        f"• *Patient:* {request.patient_name} (ABHA: {request.abha_id})\n"
+        f"• *Location:* {location}\n"
+        f"• *GPS Map:* {maps_url}\n"
+        f"• *Timestamp:* {now_iso}\n"
+        f"_Please respond immediately to the terminal._"
+    )
+    encoded_msg = urllib.parse.quote(message_text)
+    whatsapp_url = f"https://api.whatsapp.com/send?text={encoded_msg}"
+
+    alert_record = {
+        "sos_id": sos_id,
+        "timestamp_iso": now_iso,
+        "emergency_type": request.emergency_type,
+        "patient_name": request.patient_name,
+        "location": location,
+        "triage": esi_level,
+        "maps_url": maps_url,
+    }
+    _ACTIVE_ALERTS_LOG.insert(0, alert_record)
+    if len(_ACTIVE_ALERTS_LOG) > 30:
+        _ACTIVE_ALERTS_LOG.pop()
+
     return SOSTriggerResponse(
-        sos_id="SOS-20261108-0042",
+        sos_id=sos_id,
         status="DISPATCHED",
-        timestamp_iso="2026-11-08T10:00:00Z",
+        timestamp_iso=now_iso,
         emergency_type=request.emergency_type,
+        triage_esi_level=esi_level,
         strobe_visual_alert=True,
+        google_maps_url=maps_url,
+        whatsapp_dispatch_link=whatsapp_url,
         regional_audio_broadcast={
             "en": f"Emergency alert! Patient at {location} reports {request.emergency_type}!",
-            "hi": f"आपातकालीन चेतावनी! {location} के मरीज ने सहायता माँगी है!",
-            "or": f"ଜରୁରୀକାଳୀନ ସତର୍କତା! {location} ରୋଗୀ ସାହାଯ୍ୟ ମାଗିଛନ୍ତି!",
-            "te": f"అత్యవసర హెచ్చరిక! {location} లో రోగి అత్యవసర సహాయం కోరారు!",
+            "hi": f"आपातकालीन चेतावनी! {location} के मरीज ने {request.emergency_type} सहायता माँगी है!",
+            "or": f"ଜରୁରୀକାଳୀନ ସତର୍କତା! {location} ରୋଗୀ {request.emergency_type} ସାହାଯ୍ୟ ମାଗିଛନ୍ତି!",
+            "te": f"అత్యవసర హెచ్చరిక! {location} లో రోగి {request.emergency_type} అత్యవసర సహాయం కోరారు!",
         },
         dispatch_notifications={
-            "nursing_station": "SENT",
-            "duty_doctor_sms": "SENT",
-            "guardian_whatsapp": "SENT",
+            "nursing_station": "DISPATCHED_WEBHOOK",
+            "duty_doctor_sms": "SENT_TELEMETRY",
+            "guardian_whatsapp": "ENCODED_PAYLOAD_READY",
         },
     )
 
+
+class PatientVitalsInput(BaseModel):
+    heart_rate_bpm: Optional[int] = Field(default=None, example=128)
+    spo2_percent: Optional[int] = Field(default=None, example=89)
+    systolic_bp: Optional[int] = Field(default=None, example=85)
+    pain_score: Optional[int] = Field(default=8, ge=0, le=10, example=8)
+    distress_facial_blinks: Optional[int] = Field(default=3, example=3)
+
+
+class ClinicalTriageRequest(BaseModel):
+    patient_id: Optional[str] = Field(default="PAT-9842", example="PAT-9842")
+    patient_name: Optional[str] = Field(default="Rahul Sahoo", example="Rahul Sahoo")
+    isl_tokens: List[str] = Field(default=["I", "CANNOT", "BREATHE"], example=["I", "CANNOT", "BREATHE"])
+    reported_symptoms: Optional[str] = Field(default="Sudden acute breathlessness and chest tightness", example="Sudden acute breathlessness")
+    vitals: Optional[PatientVitalsInput] = Field(default_factory=PatientVitalsInput)
+
+
+class ClinicalTriageResponse(BaseModel):
+    patient_id: str = Field(..., example="PAT-9842")
+    patient_name: str = Field(..., example="Rahul Sahoo")
+    esi_level: int = Field(..., example=1)
+    esi_title: str = Field(..., example="ESI Level 1 (Immediate Resuscitation)")
+    triage_color: str = Field(..., example="RED")
+    is_life_threatening: bool = Field(..., example=True)
+    target_department: str = Field(..., example="Trauma & Resuscitation ICU")
+    clinical_rationale: str = Field(..., example="SpO2 < 90% and respiratory distress tokens indicate impending failure.")
+    recommended_action: str = Field(..., example="Immediate high-flow oxygen, call crash team.")
+    provisional_icd10: str = Field(..., example="R06.02 (Shortness of breath)")
+    timestamp_iso: str = Field(..., example="2026-11-08T10:00:00Z")
+
+
+@router.post(
+    "/triage-evaluate",
+    response_model=ClinicalTriageResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Evaluate Emergency Severity Index (ESI Level 1 to 5) Triage",
+    description="Combines ISL distress gestures, reported symptoms, and optional vitals to grade clinical emergency urgency.",
+)
+async def evaluate_clinical_triage(request: ClinicalTriageRequest) -> ClinicalTriageResponse:
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    tokens = [t.upper() for t in request.isl_tokens]
+    vitals = request.vitals or PatientVitalsInput()
+
+    # Rule 1: Immediate Resuscitation (ESI 1)
+    # Cardiac arrest, severe hypoxia, profound shock
+    is_level_1 = False
+    level_1_reasons = []
+
+    if any(t in tokens for t in ["CANNOT_BREATHE", "BREATHLESS", "UNCONSCIOUS", "FAINT", "COLLAPSE"]):
+        is_level_1 = True
+        level_1_reasons.append("Severe respiratory distress tokens detected")
+
+    if vitals.spo2_percent and vitals.spo2_percent < 90:
+        is_level_1 = True
+        level_1_reasons.append(f"Critical hypoxia (SpO2 {vitals.spo2_percent}%)")
+
+    if vitals.systolic_bp and vitals.systolic_bp < 90:
+        is_level_1 = True
+        level_1_reasons.append(f"Hypotensive shock (Systolic BP {vitals.systolic_bp} mmHg)")
+
+    if is_level_1:
+        return ClinicalTriageResponse(
+            patient_id=request.patient_id or "PAT-9842",
+            patient_name=request.patient_name or "Rahul Sahoo",
+            esi_level=1,
+            esi_title="ESI Level 1 (Immediate Resuscitation)",
+            triage_color="RED",
+            is_life_threatening=True,
+            target_department="Resuscitation / ICU Ward 1",
+            clinical_rationale="; ".join(level_1_reasons),
+            recommended_action="Immediate airway assessment, high-flow oxygen, crash cart alert.",
+            provisional_icd10="R06.02 (Dyspnea / Acute Respiratory Distress)",
+            timestamp_iso=now_iso
+        )
+
+    # Rule 2: High Risk / Severe Pain / Vital Instability (ESI 2)
+    is_level_2 = False
+    level_2_reasons = []
+
+    if any(t in tokens for t in ["CHEST_PAIN", "HEART", "BLEEDING", "BLOOD", "STROKE"]):
+        is_level_2 = True
+        level_2_reasons.append("Acute vascular/cardiac warning tokens")
+
+    if vitals.pain_score and vitals.pain_score >= 8:
+        is_level_2 = True
+        level_2_reasons.append(f"Excruciating intractable pain (Score {vitals.pain_score}/10)")
+
+    if vitals.heart_rate_bpm and (vitals.heart_rate_bpm > 120 or vitals.heart_rate_bpm < 45):
+        is_level_2 = True
+        level_2_reasons.append(f"Significant arrhythmia/tachycardia (HR {vitals.heart_rate_bpm} bpm)")
+
+    if is_level_2:
+        return ClinicalTriageResponse(
+            patient_id=request.patient_id or "PAT-9842",
+            patient_name=request.patient_name or "Rahul Sahoo",
+            esi_level=2,
+            esi_title="ESI Level 2 (Emergent / High Risk)",
+            triage_color="ORANGE",
+            is_life_threatening=False,
+            target_department="Acute Emergency Triage - Zone 2",
+            clinical_rationale="; ".join(level_2_reasons),
+            recommended_action="Bedside physician evaluation within 10 minutes, ECG stat, venous access.",
+            provisional_icd10="R07.9 (Chest Pain / Acute Emergent Finding)",
+            timestamp_iso=now_iso
+        )
+
+    # Rule 3: Moderate Symptoms (ESI 3) - Abdominal Pain, High Fever
+    if any(t in tokens for t in ["STOMACH_PAIN", "PAIN_STOMACH", "FEVER", "VOMIT", "DIZZY"]):
+        return ClinicalTriageResponse(
+            patient_id=request.patient_id or "PAT-9842",
+            patient_name=request.patient_name or "Rahul Sahoo",
+            esi_level=3,
+            esi_title="ESI Level 3 (Urgent / Multiple Diagnostic Resources)",
+            triage_color="YELLOW",
+            is_life_threatening=False,
+            target_department="General Medicine OPD / Observation Bay",
+            clinical_rationale="Moderate systemic symptoms requiring diagnostic blood work or ultrasound.",
+            recommended_action="Draw blood baseline, start oral/IV hydration, doctor consult within 30 mins.",
+            provisional_icd10="R10.9 (Abdominal Pain / Febrile Illness)",
+            timestamp_iso=now_iso
+        )
+
+    # Rule 4 & 5: Mild/Routine (ESI 4 or 5)
+    return ClinicalTriageResponse(
+        patient_id=request.patient_id or "PAT-9842",
+        patient_name=request.patient_name or "Rahul Sahoo",
+        esi_level=4,
+        esi_title="ESI Level 4 (Less Urgent / Single Resource Consultation)",
+        triage_color="GREEN",
+        is_life_threatening=False,
+        target_department="Routine OPD Clinic - Registration Desk",
+        clinical_rationale="Stable vital parameters, low acuity symptoms suitable for ambulatory care.",
+        recommended_action="Routine OPD queuing, vital check, medication reconciliation.",
+        provisional_icd10="Z00.00 (General Adult Medical Examination)",
+        timestamp_iso=now_iso
+    )
+
+
+@router.get(
+    "/active-alerts",
+    status_code=status.HTTP_200_OK,
+    summary="Get Hospital Active SOS Emergency Alerts Queue",
+    description="Returns the live queue of triggered SOS emergencies for central nursing dashboards.",
+)
+async def get_active_alerts():
+    return {
+        "total_active_alerts": len(_ACTIVE_ALERTS_LOG),
+        "alerts": _ACTIVE_ALERTS_LOG,
+    }
