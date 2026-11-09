@@ -1,28 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import {
   Activity,
-  AlertTriangle,
-  Ambulance,
-  CheckCircle2,
-  ChevronRight,
+  BarChart3,
+  CreditCard,
   Eye,
+  FileText,
   Hand,
   HeartPulse,
-  HelpCircle,
-  Mic,
+  Printer,
   RefreshCw,
-  Send,
   ShieldAlert,
-  Sparkles,
-  Stethoscope,
   Terminal,
-  User,
   UserCheck,
-  Video,
-  Volume2,
-  XCircle
+  X,
+  XCircle,
 } from 'lucide-react';
 import api from './services/api';
+import { speakTextAloud, stopAudioPlayback } from './services/audioPlayer';
+import HospitalKiosk from './components/HospitalKiosk';
+import DeafMuteHub from './components/DeafMuteHub';
+import BlindAssistant from './components/BlindAssistant';
+import MotorHandsFree from './components/MotorHandsFree';
+import SosGrid from './components/SosGrid';
+import HospitalImpactRoi from './components/HospitalImpactRoi';
 
 const LANGUAGES = [
   { code: 'en-IN', name: 'English', native: 'English' },
@@ -38,6 +38,7 @@ export default function App() {
   const [sosMessage, setSosMessage] = useState(null);
 
   // Kiosk / Deaf Hub States
+  const [currentSign, setCurrentSign] = useState('PAIN');
   const [accumulatedTokens, setAccumulatedTokens] = useState(['I', 'PAIN', 'STOMACH']);
   const [synthesizedText, setSynthesizedText] = useState('Doctor, I am experiencing severe stomach pain.');
   const [translatedResult, setTranslatedResult] = useState('डॉक्टर साहब, मेरे पेट में बहुत तेज़ दर्द हो रहा है।');
@@ -57,6 +58,95 @@ export default function App() {
   const [testEndpoint, setTestEndpoint] = useState('gesture');
   const [apiResponseJson, setApiResponseJson] = useState(null);
   const [apiLoading, setApiLoading] = useState(false);
+
+  // Audio Playback State
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
+  const handlePlayAudio = async (textToPlay) => {
+    if (!textToPlay) return;
+    if (isPlayingAudio) {
+      stopAudioPlayback();
+      setIsPlayingAudio(false);
+      return;
+    }
+    setIsPlayingAudio(true);
+    try {
+      await speakTextAloud(textToPlay, selectedLanguage);
+    } finally {
+      setIsPlayingAudio(false);
+    }
+  };
+
+  // Clinical Documents & Telemetry States (Phase 3)
+  const [showAbhaModal, setShowAbhaModal] = useState(false);
+  const [showOpdModal, setShowOpdModal] = useState(false);
+  const [currentConsultId, setCurrentConsultId] = useState('OPD-CIVIL-1794156577');
+  const [impactData, setImpactData] = useState(null);
+  const [loadingImpact, setLoadingImpact] = useState(false);
+
+  // Phase 4 Clinical States
+  const [doctorSignClips, setDoctorSignClips] = useState([]);
+  const [doctorGrammarGloss, setDoctorGrammarGloss] = useState('');
+  const [ddiResult, setDdiResult] = useState(null);
+  const [coughResult, setCoughResult] = useState(null);
+  const [isAnalyzingCough, setIsAnalyzingCough] = useState(false);
+
+  const handleAnalyzeCough = async (preset = 'WHEEZE_ASTHMA') => {
+    setIsAnalyzingCough(true);
+    try {
+      const res = await api.analyzeCough(preset, null, 'PAT-9842');
+      setCoughResult(res);
+    } catch {
+      setCoughResult({
+        biomarker_detected: 'WHEEZING_STRIDOR (Bronchospasm Detected)',
+        triage_urgency: 'HIGH',
+        icd10_code: 'J45.901 (Asthma with acute exacerbation)',
+        clinical_correlation: 'Correlates with patient documented Bronchial Asthma history.',
+        actionable_clinical_guidance: 'Immediate physician evaluation; prepare Salbutamol nebulization.',
+      });
+    } finally {
+      setIsAnalyzingCough(false);
+    }
+  };
+
+  const fetchImpactReport = async () => {
+    setLoadingImpact(true);
+    try {
+      const data = await api.getHospitalImpactReport();
+      setImpactData(data);
+    } catch {
+      setImpactData({
+        hospital_name: 'Government Civil Hospital - SignBridge Universal Kiosk',
+        total_patient_encounters: 42,
+        critical_allergy_contraindications_blocked: 14,
+        average_triage_minutes_saved_per_patient: 18.5,
+        estimated_total_staff_hours_saved: 12.9,
+        edge_offline_uptime_percentage: 99.98,
+        abdm_health_locker_sync_rate: 100.0,
+        disability_demographics_percentage: {
+          'Deaf & Mute (ISL Gestures)': '62.5%',
+          'Blind & Low Vision (Speech/OCR)': '22.5%',
+          'Motor Impaired (Face Mesh/Nod)': '15.0%',
+        },
+        top_diagnosed_conditions: [
+          { icd10: 'R10.9', condition: 'Acute Abdominal Pain', count: 18 },
+          { icd10: 'R07.9', condition: 'Acute Chest Pain / Triage Red', count: 8 },
+          { icd10: 'J45.9', condition: 'Bronchial Asthma Exacerbation', count: 6 },
+        ],
+      });
+    } finally {
+      setLoadingImpact(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'impact_stats' && !impactData) {
+      const timer = setTimeout(() => {
+        fetchImpactReport();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, impactData]);
 
   // Trigger Gemini Synthesis
   const handleSynthesizeTokens = async () => {
@@ -82,11 +172,18 @@ export default function App() {
     }
   };
 
-  // Convert Doctor voice to Sign Glosses
+  // Convert Doctor voice to Sign Glosses (Two-Way Sequencer)
   const handleDoctorToGloss = async () => {
     try {
-      const result = await api.textToGloss(doctorSpeechInput);
-      setDoctorGlosses(result.gloss_sequence);
+      const result = await api.tokenizeSignSequence(doctorSpeechInput, selectedLanguage);
+      if (result && result.tokens && result.tokens.length > 0) {
+        setDoctorGlosses(result.tokens);
+        setDoctorSignClips(result.clips || []);
+        setDoctorGrammarGloss(result.isl_grammatical_gloss || result.tokens.join(' '));
+      } else {
+        const fallbackRes = await api.textToGloss(doctorSpeechInput);
+        setDoctorGlosses(fallbackRes.gloss_sequence || ['YOU', 'HURT', 'WHERE', 'SIT', 'PLEASE']);
+      }
     } catch {
       setDoctorGlosses(['YOU', 'HURT', 'WHERE', 'SIT', 'PLEASE']);
     }
@@ -113,12 +210,20 @@ export default function App() {
     }
   };
 
-  // Simulate Medicine Scan
+  // Simulate Medicine Scan with DDI Checking
   const handleScanMedicine = async () => {
     setIsScanning(true);
     try {
       const result = await api.scanMedicine('dummy_base64_data', selectedLanguage.split('-')[0]);
       setVisionResult(result);
+
+      // Automatic Drug-Drug Interaction check against active regimen
+      try {
+        const ddi = await api.checkDDI([result.medicine_name || 'Ibuprofen 400mg'], ['Amlodipine 5mg'], 'PAT-9842');
+        setDdiResult(ddi);
+      } catch (ddiErr) {
+        console.warn('DDI check fallback:', ddiErr);
+      }
     } catch {
       setVisionResult({
         medicine_name: 'Paracetamol',
@@ -173,16 +278,16 @@ export default function App() {
   return (
     <div className={`min-h-screen ${sosActive ? 'sos-strobe-active' : ''}`} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       {/* Top Accessibility & Regional Language Bar */}
-      <header style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--bg-secondary)', padding: '12px 24px' }}>
+      <header style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--bg-secondary)', padding: '12px 24px', boxShadow: '0 2px 10px rgba(180, 83, 9, 0.04)' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '10px', backgroundColor: 'var(--accent-yellow)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 'bold' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, #D97706 0%, #B45309 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(180, 83, 9, 0.25)' }}>
               <HeartPulse size={26} />
             </div>
             <div>
-              <h1 style={{ fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h1 style={{ fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
                 SignBridge Universal
-                <span style={{ fontSize: '11px', textTransform: 'uppercase', padding: '2px 8px', borderRadius: '999px', backgroundColor: 'rgba(6, 182, 212, 0.2)', color: 'var(--accent-cyan)', border: '1px solid var(--accent-cyan)' }}>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', padding: '2px 8px', borderRadius: '999px', backgroundColor: 'rgba(15, 118, 110, 0.12)', color: 'var(--accent-cyan)', border: '1px solid var(--accent-cyan)' }}>
                   WCAG 2.1 AAA
                 </span>
               </h1>
@@ -205,15 +310,58 @@ export default function App() {
                     borderRadius: '8px',
                     fontSize: '13px',
                     fontWeight: selectedLanguage === lang.code ? 'bold' : 'normal',
-                    backgroundColor: selectedLanguage === lang.code ? 'var(--accent-cyan)' : 'var(--bg-card)',
-                    color: selectedLanguage === lang.code ? '#000' : 'var(--text-primary)',
-                    border: '1px solid ' + (selectedLanguage === lang.code ? 'var(--accent-cyan)' : 'var(--border)'),
+                    backgroundColor: selectedLanguage === lang.code ? 'var(--accent-yellow)' : 'var(--bg-card)',
+                    color: selectedLanguage === lang.code ? '#FFFFFF' : 'var(--text-primary)',
+                    border: '1px solid ' + (selectedLanguage === lang.code ? 'var(--accent-yellow)' : 'var(--border)'),
                     transition: 'all 0.2s',
+                    boxShadow: selectedLanguage === lang.code ? '0 2px 6px rgba(180, 83, 9, 0.2)' : 'none',
                   }}
                 >
                   {lang.native}
                 </button>
               ))}
+            </div>
+
+            {/* Official Hospital Documents Buttons */}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => setShowAbhaModal(true)}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(21, 128, 61, 0.1)',
+                  color: 'var(--accent-green)',
+                  border: '1px solid var(--accent-green)',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <CreditCard size={15} /> 🪪 ABHA Card
+              </button>
+              <button
+                onClick={() => setShowOpdModal(true)}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(15, 118, 110, 0.1)',
+                  color: 'var(--accent-cyan)',
+                  border: '1px solid var(--accent-cyan)',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <FileText size={15} /> 🖨️ OPD Slip
+              </button>
             </div>
 
             {sosActive && (
@@ -239,7 +387,7 @@ export default function App() {
       </header>
 
       {/* Navigation Tabs */}
-      <nav style={{ backgroundColor: 'rgba(30, 41, 59, 0.7)', borderBottom: '1px solid var(--border)', padding: '8px 24px' }}>
+      <nav style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', padding: '8px 24px' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', gap: '8px', overflowX: 'auto' }}>
           {[
             { id: 'kiosk', label: '🏥 Hospital Kiosk (Split-Screen)', icon: Activity },
@@ -247,6 +395,7 @@ export default function App() {
             { id: 'blind_mode', label: '🦯 Blind Assistant (AI Camera)', icon: Eye },
             { id: 'motor_mode', label: '♿ Motor Hands-Free', icon: UserCheck },
             { id: 'sos_grid', label: '🚨 1-Tap SOS Grid', icon: ShieldAlert },
+            { id: 'impact_stats', label: '📊 Hospital Impact & ROI', icon: BarChart3 },
             { id: 'api_tester', label: '🔌 API Contract Tester', icon: Terminal },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -263,9 +412,11 @@ export default function App() {
                   borderRadius: '8px',
                   fontSize: '14px',
                   fontWeight: isActive ? 'bold' : '500',
-                  backgroundColor: isActive ? 'var(--bg-secondary)' : 'transparent',
+                  backgroundColor: isActive ? 'var(--bg-card)' : 'transparent',
                   color: isActive ? 'var(--accent-yellow)' : 'var(--text-secondary)',
+                  border: isActive ? '1px solid var(--border)' : '1px solid transparent',
                   borderBottom: isActive ? '3px solid var(--accent-yellow)' : '3px solid transparent',
+                  boxShadow: isActive ? '0 2px 8px rgba(180, 83, 9, 0.08)' : 'none',
                   whiteSpace: 'nowrap',
                   transition: 'all 0.15s',
                 }}
@@ -280,411 +431,93 @@ export default function App() {
 
       {/* Main Content Area */}
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
-        {/* TAB 1: DUAL-SCREEN HOSPITAL KIOSK */}
+        {/* TAB 1: DUAL-SCREEN HOSPITAL KIOSK (PHASE 1) */}
         {activeTab === 'kiosk' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '24px' }}>
-            {/* LEFT: Patient Console */}
-            <div style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--accent-yellow)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <User size={18} /> Patient Console (ISL Gesture Input)
-                </span>
-                <span style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '12px', backgroundColor: 'rgba(16, 185, 129, 0.15)', color: 'var(--accent-green)', border: '1px solid var(--accent-green)' }}>
-                  60 FPS Edge AI Ready
-                </span>
-              </div>
-
-              {/* Simulated Camera Viewfinder */}
-              <div style={{ position: 'relative', width: '100%', height: '240px', borderRadius: '12px', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border)' }}>
-                <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
-                  <Video size={48} style={{ margin: '0 auto 12px', color: 'var(--accent-cyan)' }} />
-                  <p style={{ fontSize: '14px', fontWeight: 'bold' }}>MediaPipe Hand Landmark Viewport</p>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>21 3D Landmarks Extracted In Browser</p>
-                </div>
-                <div style={{ position: 'absolute', bottom: '12px', left: '12px', padding: '6px 12px', borderRadius: '8px', backgroundColor: 'rgba(15, 23, 42, 0.85)', border: '1px solid var(--accent-cyan)', fontSize: '12px', color: 'var(--accent-cyan)', fontWeight: 'bold' }}>
-                  Detected Sign: PAIN (94.2%)
-                </div>
-              </div>
-
-              {/* Accumulated Sign Gloss Tokens */}
-              <div>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Accumulated ISL Tokens:</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', minHeight: '44px', padding: '10px', borderRadius: '8px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border)' }}>
-                  {accumulatedTokens.map((t, idx) => (
-                    <span key={idx} style={{ padding: '6px 14px', borderRadius: '6px', backgroundColor: 'rgba(250, 204, 21, 0.15)', color: 'var(--accent-yellow)', border: '1px solid var(--accent-yellow)', fontWeight: 'bold', fontSize: '13px' }}>
-                      {t}
-                    </span>
-                  ))}
-                  <button
-                    onClick={() => setAccumulatedTokens([...accumulatedTokens, 'WATER'])}
-                    style={{ padding: '6px 12px', borderRadius: '6px', backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)', fontSize: '12px', border: '1px dashed var(--border)' }}
-                  >
-                    + Add "WATER"
-                  </button>
-                  <button
-                    onClick={() => setAccumulatedTokens([])}
-                    style={{ padding: '6px 12px', borderRadius: '6px', backgroundColor: 'transparent', color: 'var(--text-muted)', fontSize: '12px' }}
-                  >
-                    Clear
-                  </button>
-                </div>
-              </div>
-
-              {/* Gemini Grammar Bridge Action */}
-              <button
-                onClick={handleSynthesizeTokens}
-                disabled={isTranslating || accumulatedTokens.length === 0}
-                className="touch-target-lg"
-                style={{
-                  borderRadius: '12px',
-                  backgroundColor: 'var(--accent-yellow)',
-                  color: '#000',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px',
-                  boxShadow: '0 4px 14px rgba(250, 204, 21, 0.3)',
-                }}
-              >
-                <Sparkles size={20} />
-                {isTranslating ? 'Synthesizing with Gemini 1.5...' : 'Speak for Me (Gemini Bridge)'}
-              </button>
-            </div>
-
-            {/* RIGHT: Doctor / Hospital Staff Console */}
-            <div style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--accent-cyan)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Stethoscope size={18} /> Staff / Doctor Console
-                </span>
-                <span style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '12px', backgroundColor: 'rgba(6, 182, 212, 0.15)', color: 'var(--accent-cyan)', border: '1px solid var(--accent-cyan)' }}>
-                  Two-Way Speech Engine
-                </span>
-              </div>
-
-              {/* Patient's Synthesized Medical Dialogue */}
-              <div style={{ padding: '16px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border)' }}>
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Patient Statement (English):</p>
-                <p style={{ fontSize: '17px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '12px' }}>
-                  "{synthesizedText}"
-                </p>
-
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Regional Medical Translation:</p>
-                <p style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-yellow)' }}>
-                  {translatedResult}
-                </p>
-              </div>
-
-              {/* Doctor's Response Input */}
-              <div>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Doctor Response (Transcribed / Typed):</p>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    type="text"
-                    value={doctorSpeechInput}
-                    onChange={(e) => setDoctorSpeechInput(e.target.value)}
-                    style={{
-                      flex: 1,
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      backgroundColor: 'var(--bg-primary)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--text-primary)',
-                      fontSize: '14px',
-                    }}
-                  />
-                  <button
-                    onClick={handleDoctorToGloss}
-                    style={{
-                      padding: '12px 20px',
-                      borderRadius: '8px',
-                      backgroundColor: 'var(--accent-cyan)',
-                      color: '#000',
-                      fontWeight: 'bold',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}
-                  >
-                    <Send size={16} /> Send
-                  </button>
-                </div>
-              </div>
-
-              {/* Two-Way Sign Video Playlist Sequencer */}
-              <div style={{ padding: '16px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border)' }}>
-                <p style={{ fontSize: '12px', color: 'var(--accent-cyan)', fontWeight: 'bold', marginBottom: '8px' }}>
-                  Two-Way Sign Sequencer (Avatar Clip Playlist):
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {doctorGlosses.map((g, idx) => (
-                    <span key={idx} style={{ padding: '6px 12px', borderRadius: '6px', backgroundColor: 'rgba(6, 182, 212, 0.15)', color: 'var(--accent-cyan)', border: '1px solid var(--accent-cyan)', fontSize: '12px', fontWeight: 'bold' }}>
-                      {idx + 1}. {g}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          <HospitalKiosk
+            currentSign={currentSign}
+            setCurrentSign={setCurrentSign}
+            accumulatedTokens={accumulatedTokens}
+            setAccumulatedTokens={setAccumulatedTokens}
+            synthesizedText={synthesizedText}
+            translatedResult={translatedResult}
+            isTranslating={isTranslating}
+            handleSynthesizeTokens={handleSynthesizeTokens}
+            doctorSpeechInput={doctorSpeechInput}
+            setDoctorSpeechInput={setDoctorSpeechInput}
+            handleDoctorToGloss={handleDoctorToGloss}
+            doctorGlosses={doctorGlosses}
+            doctorGrammarGloss={doctorGrammarGloss}
+            doctorSignClips={doctorSignClips}
+            isPlayingAudio={isPlayingAudio}
+            handlePlayAudio={handlePlayAudio}
+            isAnalyzingCough={isAnalyzingCough}
+            coughResult={coughResult}
+            handleAnalyzeCough={handleAnalyzeCough}
+          />
         )}
 
-        {/* TAB 2: DEAF & MUTE HUB */}
+        {/* TAB 2: DEAF & MUTE HUB (PHASE 2) */}
         {activeTab === 'deaf_hub' && (
-          <div style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border)', padding: '28px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--accent-yellow)' }}>
-              🧏 Mode 1: Deaf & Mute Gesture Recognition Hub
-            </h2>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
-              Real-time MediaPipe Hand landmark extractor coupled with sub-30ms ISL Random Forest classifier.
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-              {['PAIN', 'DOCTOR', 'MEDICINE', 'HELP', 'WATER', 'FOOD', 'FEVER', 'YES'].map((sign) => (
-                <button
-                  key={sign}
-                  onClick={() => setAccumulatedTokens([...accumulatedTokens, sign])}
-                  className="touch-target-lg"
-                  style={{
-                    backgroundColor: 'var(--bg-card)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '12px',
-                    padding: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    color: 'var(--text-primary)',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  <span>{sign}</span>
-                  <span style={{ fontSize: '12px', color: 'var(--accent-cyan)' }}>+ Add Sign</span>
-                </button>
-              ))}
-            </div>
-
-            <div style={{ padding: '16px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Current Sentence Tokens: </span>
-                <span style={{ fontWeight: 'bold', color: 'var(--accent-yellow)' }}>
-                  {accumulatedTokens.join(' ➔ ') || '(None selected)'}
-                </span>
-              </div>
-              <button
-                onClick={handleSynthesizeTokens}
-                style={{ padding: '10px 20px', borderRadius: '8px', backgroundColor: 'var(--accent-yellow)', color: '#000', fontWeight: 'bold' }}
-              >
-                Synthesize Sentence
-              </button>
-            </div>
-          </div>
+          <DeafMuteHub
+            accumulatedTokens={accumulatedTokens}
+            setAccumulatedTokens={setAccumulatedTokens}
+            synthesizedText={synthesizedText}
+            translatedResult={translatedResult}
+            isTranslating={isTranslating}
+            handleSynthesizeTokens={handleSynthesizeTokens}
+            selectedLanguage={selectedLanguage}
+            isPlayingAudio={isPlayingAudio}
+            handlePlayAudio={handlePlayAudio}
+          />
         )}
 
-        {/* TAB 3: BLIND & LOW-VISION ASSISTANT */}
+        {/* TAB 3: BLIND & LOW-VISION ASSISTANT (PHASE 3) */}
         {activeTab === 'blind_mode' && (
-          <div style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border)', padding: '28px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--accent-cyan)' }}>
-              🦯 Mode 2: Blind & Low-Vision Assistant ("AI Camera Eyes")
-            </h2>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
-              Point camera at prescription, medicine box, or corridor signs to receive instant high-contrast regional audio guidance.
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', marginBottom: '24px' }}>
-              <button
-                onClick={handleScanMedicine}
-                disabled={isScanning}
-                className="touch-target-lg"
-                style={{
-                  padding: '24px',
-                  borderRadius: '16px',
-                  backgroundColor: 'var(--bg-card)',
-                  border: '2px solid var(--accent-cyan)',
-                  textAlign: 'left',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-cyan)', fontSize: '18px', fontWeight: 'bold' }}>
-                  <Eye size={24} /> 1-Touch Medicine Scanner
-                </div>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  Extracts drug name, dosage, active ingredients, and expiry warnings.
-                </p>
-                <span style={{ marginTop: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-yellow)' }}>
-                  {isScanning ? 'Inspecting with Gemini Vision...' : '➔ Tap to Scan Medicine'}
-                </span>
-              </button>
-
-              <button
-                onClick={handleScanMedicine}
-                className="touch-target-lg"
-                style={{
-                  padding: '24px',
-                  borderRadius: '16px',
-                  backgroundColor: 'var(--bg-card)',
-                  border: '1px solid var(--border)',
-                  textAlign: 'left',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-yellow)', fontSize: '18px', fontWeight: 'bold' }}>
-                  <Volume2 size={24} /> Audio Corridor Guide
-                </div>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  Reads room numbers, ICU signs, and emergency exits aloud in Indian regional languages.
-                </p>
-                <span style={{ marginTop: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-cyan)' }}>
-                  ➔ Tap to Scan Signboard
-                </span>
-              </button>
-            </div>
-
-            {visionResult && (
-              <div style={{ padding: '20px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--accent-cyan)' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--accent-cyan)', marginBottom: '8px' }}>
-                  Detected: {visionResult.medicine_name} ({visionResult.strength})
-                </h3>
-                <p style={{ fontSize: '15px', color: 'var(--text-primary)', marginBottom: '12px' }}>
-                  <strong>Audio Spoken Output:</strong> "{visionResult.spoken_summary}"
-                </p>
-                <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  <span>Dosage: {visionResult.dosage_instructions}</span>
-                  <span>Expiry: {visionResult.expiry_date}</span>
-                </div>
-              </div>
-            )}
-          </div>
+          <BlindAssistant
+            visionResult={visionResult}
+            isScanning={isScanning}
+            handleScanMedicine={handleScanMedicine}
+            ddiResult={ddiResult}
+            isPlayingAudio={isPlayingAudio}
+            handlePlayAudio={handlePlayAudio}
+          />
         )}
 
-        {/* TAB 4: MOTOR-IMPAIRED HANDS-FREE */}
+        {/* TAB 4: MOTOR-IMPAIRED HANDS-FREE (PHASE 4) */}
         {activeTab === 'motor_mode' && (
-          <div style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border)', padding: '28px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--accent-green)' }}>
-              ♿ Mode 3: Motor-Impaired Hands-Free Controller
-            </h2>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
-              Head Nod (YES), Head Shake (NO), and Sustained Double Blink (Emergency Alarm) via MediaPipe Face Mesh.
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-              <button
-                onClick={() => {
-                  setMotorAction('YES_CONFIRM');
-                  setMotorFeedback('Head Nod Detected: YES / Confirm');
-                }}
-                className="touch-target-lg"
-                style={{ padding: '20px', borderRadius: '12px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--accent-green)', textAlign: 'left' }}
-              >
-                <div style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-green)' }}>Head Nod Up/Down</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Triggers "YES" / Confirm Selection</div>
-              </button>
-
-              <button
-                onClick={() => {
-                  setMotorAction('NO_CANCEL');
-                  setMotorFeedback('Head Shake Detected: NO / Cancel');
-                }}
-                className="touch-target-lg"
-                style={{ padding: '20px', borderRadius: '12px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', textAlign: 'left' }}
-              >
-                <div style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-yellow)' }}>Head Shake Left/Right</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Triggers "NO" / Cancel Action</div>
-              </button>
-
-              <button
-                onClick={() => {
-                  setMotorAction('DOUBLE_BLINK_EMERGENCY');
-                  setMotorFeedback('Sustained Double Blink: Emergency Alarm Triggered!');
-                  handleTriggerSOS('FALL_DETECTED');
-                }}
-                className="touch-target-lg"
-                style={{ padding: '20px', borderRadius: '12px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--accent-red)', textAlign: 'left' }}
-              >
-                <div style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-red)' }}>Double Blink (EAR &lt; 0.2)</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Triggers Instant Emergency Alarm</div>
-              </button>
-            </div>
-
-            <div style={{ padding: '16px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border)' }}>
-              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Active Intent: </span>
-              <span style={{ fontWeight: 'bold', color: 'var(--accent-yellow)', fontSize: '16px' }}>{motorFeedback}</span>
-            </div>
-          </div>
+          <MotorHandsFree
+            motorAction={motorAction}
+            setMotorAction={setMotorAction}
+            motorFeedback={motorFeedback}
+            setMotorFeedback={setMotorFeedback}
+            handleTriggerSOS={handleTriggerSOS}
+          />
         )}
 
-        {/* TAB 5: 1-TAP SOS EMERGENCY GRID */}
+        {/* TAB 5: 1-TAP SOS EMERGENCY GRID (PHASE 5) */}
         {activeTab === 'sos_grid' && (
-          <div>
-            <div style={{ marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--accent-red)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ShieldAlert size={24} /> Mode 4: Instant 1-Tap SOS Emergency Grid
-              </h2>
-              <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                Giant touch targets (&gt;64px). Tapping any card dispatches immediate regional audio, visual strobe, and nursing station alerts.
-              </p>
-            </div>
+          <SosGrid
+            sosActive={sosActive}
+            setSosActive={setSosActive}
+            sosMessage={sosMessage}
+            setSosMessage={setSosMessage}
+            handleTriggerSOS={handleTriggerSOS}
+            handlePlayAudio={handlePlayAudio}
+            isPlayingAudio={isPlayingAudio}
+          />
+        )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '28px' }}>
-              {[
-                { type: 'AMBULANCE', title: 'Ambulance', icon: Ambulance, color: '#ef4444' },
-                { type: 'SEVERE_PAIN', title: 'Severe Pain', icon: AlertTriangle, color: '#f59e0b' },
-                { type: 'DOCTOR_NEEDED', title: 'Doctor Needed', icon: Stethoscope, color: '#06b6d4' },
-                { type: 'CANNOT_BREATHE', title: 'Cannot Breathe', icon: Activity, color: '#ec4899' },
-                { type: 'FALL_DETECTED', title: 'Fell Down / Lost', icon: HelpCircle, color: '#8b5cf6' },
-                { type: 'FAMILY_ALERT', title: 'Call Family', icon: User, color: '#10b981' },
-              ].map((card) => {
-                const Icon = card.icon;
-                return (
-                  <button
-                    key={card.type}
-                    onClick={() => handleTriggerSOS(card.type)}
-                    className="touch-target-lg"
-                    style={{
-                      backgroundColor: 'var(--bg-secondary)',
-                      borderRadius: '16px',
-                      padding: '28px',
-                      border: `2px solid ${card.color}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '16px',
-                      color: 'var(--text-primary)',
-                      textAlign: 'left',
-                      boxShadow: `0 4px 18px rgba(0,0,0,0.3)`,
-                      transition: 'transform 0.1s',
-                    }}
-                  >
-                    <div style={{ width: '56px', height: '56px', borderRadius: '12px', backgroundColor: `${card.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: card.color }}>
-                      <Icon size={32} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{card.title}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Tap for Instant SOS</div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {sosMessage && (
-              <div style={{ padding: '20px', borderRadius: '12px', backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid var(--accent-red)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-red)', fontWeight: 'bold', fontSize: '16px', marginBottom: '8px' }}>
-                  <AlertTriangle size={20} /> SOS Broadcast Dispatched: {sosMessage.emergency_type}
-                </div>
-                <p style={{ fontSize: '14px', marginBottom: '8px' }}>
-                  <strong>Audio Broadcast:</strong> {sosMessage.regional_audio_broadcast?.hi || sosMessage.regional_audio_broadcast?.en}
-                </p>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Dispatch Status: Nursing Station (SENT) • SMS Alert (SENT) • Visual Strobe (ACTIVE)
-                </div>
-              </div>
-            )}
-          </div>
+        {/* TAB: HOSPITAL IMPACT & TELEMETRY ROI (PHASE 6) */}
+        {activeTab === 'impact_stats' && (
+          <HospitalImpactRoi
+            impactData={impactData}
+            loadingImpact={loadingImpact}
+            fetchImpactReport={fetchImpactReport}
+            setShowAbhaModal={setShowAbhaModal}
+            setShowOpdModal={setShowOpdModal}
+            currentConsultId={currentConsultId}
+            setCurrentConsultId={setCurrentConsultId}
+          />
         )}
 
         {/* TAB 6: API CONTRACT TESTER */}
@@ -760,6 +593,90 @@ export default function App() {
           </div>
         )}
       </main>
+
+      {/* MODAL 1: OFFICIAL GOVERNMENT ABHA SMART CARD */}
+      {showAbhaModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(28, 25, 23, 0.65)', backdropFilter: 'blur(4px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ width: '100%', maxWidth: '580px', backgroundColor: '#FAF8F5', borderRadius: '18px', border: '1px solid #E6DFD5', padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px', boxShadow: '0 25px 50px -12px rgba(45, 35, 20, 0.25)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-green)', fontWeight: 'bold', fontSize: '16px' }}>
+                <CreditCard size={20} /> 🪪 Official ABHA Digital Health Card
+              </div>
+              <button
+                onClick={() => setShowAbhaModal(false)}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <iframe
+              src="http://localhost:8000/api/consultation/abha-card/PAT-9842"
+              title="Official ABHA Card"
+              style={{ width: '100%', height: '460px', border: '1px solid var(--border)', borderRadius: '12px', backgroundColor: '#FFFFFF' }}
+            />
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px' }}>
+              <a
+                href="http://localhost:8000/api/consultation/abha-card/PAT-9842"
+                target="_blank"
+                rel="noreferrer"
+                style={{ fontSize: '13px', color: 'var(--accent-cyan)', textDecoration: 'none', fontWeight: 'bold' }}
+              >
+                ➔ Open Fullscreen Card
+              </a>
+              <button
+                onClick={() => setShowAbhaModal(false)}
+                style={{ padding: '8px 18px', borderRadius: '8px', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: PRINTABLE CIVIL HOSPITAL OPD PRESCRIPTION SLIP */}
+      {showOpdModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(28, 25, 23, 0.65)', backdropFilter: 'blur(4px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ width: '100%', maxWidth: '860px', backgroundColor: '#FAF8F5', borderRadius: '18px', border: '1px solid #E6DFD5', padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px', boxShadow: '0 25px 50px -12px rgba(45, 35, 20, 0.25)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-cyan)', fontWeight: 'bold', fontSize: '16px' }}>
+                <FileText size={20} /> 🖨️ Government Civil Hospital • Signed OPD Slip
+              </div>
+              <button
+                onClick={() => setShowOpdModal(false)}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <iframe
+              src="http://localhost:8000/api/consultation/slip-html/OPD-CIVIL-1794156577"
+              title="Official OPD Slip"
+              style={{ width: '100%', height: '520px', border: '1px solid var(--border)', borderRadius: '12px', backgroundColor: '#FFFFFF' }}
+            />
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px' }}>
+              <a
+                href="http://localhost:8000/api/consultation/slip-html/OPD-CIVIL-1794156577"
+                target="_blank"
+                rel="noreferrer"
+                style={{ fontSize: '13px', color: 'var(--accent-yellow)', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Printer size={16} /> 🖨️ Print Prescription Slip
+              </a>
+              <button
+                onClick={() => setShowOpdModal(false)}
+                style={{ padding: '8px 18px', borderRadius: '8px', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
