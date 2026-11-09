@@ -1,19 +1,19 @@
-/* SignBridge Universal — WCAG 2.1 AAA Accessibility Styles */
+/* SignBridge Universal — Warm Cream & Golden Medical Accessibility Theme */
 :root {
-  --bg-primary: #0f172a;       /* Dark Charcoal / Slate 900 */
-  --bg-secondary: #1e293b;     /* Slate 800 */
-  --bg-card: #1e293b;
-  --bg-card-hover: #334155;
-  --border: #334155;           /* Slate 700 */
-  --border-focus: #facc15;     /* Electric Yellow */
-  --text-primary: #f8fafc;     /* Slate 50 */
-  --text-secondary: #94a3b8;   /* Slate 400 */
-  --text-muted: #64748b;       /* Slate 500 */
+  --bg-primary: #FAF6ED;       /* Warm Cream / Ivory with Golden undertone */
+  --bg-secondary: #F3EBDD;     /* Soft Warm Golden Cream */
+  --bg-card: #FFFFFF;          /* Pure Porcelain White */
+  --bg-card-hover: #FDFBF6;    /* Subtle Warm Hover */
+  --border: #E5DECE;           /* Warm Golden-Champagne Border */
+  --border-focus: #B45309;     /* Deep Warm Amber */
+  --text-primary: #1C1917;     /* Warm Charcoal / Stone 900 (High-Contrast AAA) */
+  --text-secondary: #57534E;   /* Warm Slate / Stone 600 */
+  --text-muted: #8C857B;       /* Warm Taupe / Stone 500 */
   
-  --accent-yellow: #facc15;    /* High-Visibility Electric Yellow */
-  --accent-cyan: #06b6d4;      /* High-Visibility Cyan */
-  --accent-red: #ef4444;       /* High-Visibility Emergency Red */
-  --accent-green: #10b981;     /* Emerald Green */
+  --accent-yellow: #B45309;    /* Rich Golden Amber */
+  --accent-cyan: #0F766E;      /* Clinical Deep Teal */
+  --accent-red: #DC2626;       /* Medical Emergency Crimson */
+  --accent-green: #15803D;     /* Clinical Emerald Green */
 
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -28,6 +28,8 @@
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-primary);
+  background-image: radial-gradient(ellipse at 50% 0%, #FFFDF8 0%, #FAF6EA 45%, #F3EBDD 100%);
+  background-attachment: fixed;
   color: var(--text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -57,12 +59,12 @@ input:focus-visible {
 /* Strobe Alert Effect for Instant 1-Tap SOS */
 @keyframes emergency-strobe {
   0%, 100% {
-    box-shadow: inset 0 0 0 8px #ef4444, 0 0 50px rgba(239, 68, 68, 0.8);
-    background-color: rgba(239, 68, 68, 0.15);
+    box-shadow: inset 0 0 0 8px #DC2626, 0 0 50px rgba(220, 38, 38, 0.4);
+    background-color: rgba(220, 38, 38, 0.08);
   }
   50% {
-    box-shadow: inset 0 0 0 8px #facc15, 0 0 60px rgba(250, 204, 21, 0.9);
-    background-color: rgba(250, 204, 21, 0.15);
+    box-shadow: inset 0 0 0 8px #B45309, 0 0 60px rgba(180, 83, 9, 0.4);
+    background-color: rgba(180, 83, 9, 0.08);
   }
 }
 
@@ -70,31 +72,28 @@ input:focus-visible {
   animation: emergency-strobe 0.8s infinite ease-in-out;
 }
 
-/* Subtle glow utilities */
+/* Subtle warm golden glow utilities */
 .glow-cyan {
-  box-shadow: 0 0 15px rgba(6, 182, 212, 0.35);
+  box-shadow: 0 0 15px rgba(15, 118, 110, 0.25);
 }
 
 .glow-yellow {
-  box-shadow: 0 0 15px rgba(250, 204, 21, 0.35);
+  box-shadow: 0 0 15px rgba(180, 83, 9, 0.25);
 }
 
-.glow-red {
-  box-shadow: 0 0 15px rgba(239, 68, 68, 0.45);
+@keyframes dwell-ring {
+  0% { transform: scale(0.98); opacity: 0.8; }
+  50% { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(0.98); opacity: 0.8; }
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+@keyframes laser-sweep {
+  0% { transform: translateY(0); opacity: 0.4; }
+  50% { opacity: 0.9; }
+  100% { transform: translateY(180px); opacity: 0.4; }
 }
-::-webkit-scrollbar-track {
-  background: var(--bg-primary);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--border-focus);
+
+@keyframes pulse-soft {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  50% { transform: scale(1.05); opacity: 1; }
 }
