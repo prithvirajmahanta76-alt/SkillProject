@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from app.api.endpoints import (
+    consultation,
     emergency,
     face_control,
     gesture,
@@ -16,4 +17,6 @@ api_router.include_router(vision_reader.router, prefix="/vision", tags=["Vision 
 api_router.include_router(face_control.router, prefix="/face-control", tags=["Face Mesh Motor Control"])
 api_router.include_router(speech.router, prefix="/speech", tags=["Regional Speech & Signs"])
 api_router.include_router(emergency.router, prefix="/emergency", tags=["Emergency & SOS"])
+api_router.include_router(consultation.router, prefix="/consultation", tags=["Consultation & OPD Slip"])
+
 
