@@ -2,6 +2,7 @@ import base64
 import json
 import re
 import datetime
+import time as _time
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, status
 import google.generativeai as genai
@@ -10,6 +11,17 @@ from pydantic import BaseModel, Field
 from app.core.config import settings
 
 router = APIRouter()
+
+# 6-preset medicine rotation (cycles when GEMINI_API_KEY is absent)
+_OFFLINE_MEDICINE_ROTATION = [
+    "paracetamol",
+    "azithral",
+    "pantocid",
+    "augmentin",
+    "paracetamol",   # intentionally repeated to demo allergy-safe baseline
+    "paracetamol",
+]
+_medicine_scan_counter = 0
 
 # Patient Documented Allergies Registry
 PATIENT_ALLERGY_REGISTRY: Dict[str, Dict[str, Any]] = {
@@ -286,7 +298,11 @@ async def scan_medicine(request: MedicineScanRequest) -> MedicineScanResponse:
 
     # 2. Match with Indian Clinical Drug Knowledge Base
     target_lang = request.preferred_language.split("-")[0]
-    matched_entry = INDIAN_ESSENTIAL_DRUGS_DB["paracetamol"]  # Default gold-standard baseline
+    # Offline: rotate through 6 presets instead of always defaulting to Dolo 650
+    global _medicine_scan_counter
+    offline_key = _OFFLINE_MEDICINE_ROTATION[_medicine_scan_counter % len(_OFFLINE_MEDICINE_ROTATION)]
+    _medicine_scan_counter += 1
+    matched_entry = INDIAN_ESSENTIAL_DRUGS_DB.get(offline_key, INDIAN_ESSENTIAL_DRUGS_DB["paracetamol"])
 
     if gemini_result and "medicine_name" in gemini_result:
         med_name_lower = gemini_result["medicine_name"].lower()
