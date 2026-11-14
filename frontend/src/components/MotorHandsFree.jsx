@@ -13,7 +13,51 @@ import {
   Sparkles,
   Eye,
   Activity,
+  Camera,
+  VideoOff,
+  AlertCircle,
 } from 'lucide-react';
+import api from '../services/api';
+
+/** Dynamic CDN loader for MediaPipe Face Mesh */
+function loadMediaPipeFaceMesh() {
+  return new Promise((resolve, reject) => {
+    if (window.__mediapipeFaceMeshLoaded) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js';
+    script.crossOrigin = 'anonymous';
+    script.onload = () => {
+      const cameraScript = document.createElement('script');
+      cameraScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js';
+      cameraScript.crossOrigin = 'anonymous';
+      cameraScript.onload = () => {
+        window.__mediapipeFaceMeshLoaded = true;
+        resolve();
+      };
+      cameraScript.onerror = reject;
+      document.head.appendChild(cameraScript);
+    };
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+function dist2D(p1, p2) {
+  return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+}
+
+/** Calculate Eye Aspect Ratio from standard 6-point eye landmarks */
+function calculateEyeEAR(pOuter, pInner, pTop1, pTop2, pBot1, pBot2) {
+  const vert1 = dist2D(pTop1, pBot1);
+  const vert2 = dist2D(pTop2, pBot2);
+  const horiz = dist2D(pOuter, pInner);
+  if (horiz === 0) return 0.28;
+  return (vert1 + vert2) / (2.0 * horiz);
+}
 
 /**
  * MotorHandsFree
@@ -36,16 +80,30 @@ export default function MotorHandsFree({
   const [pitch, setPitch] = useState(0); // Up/Down (-20 to +30 deg)
   const [yaw, setYaw] = useState(0);     // Left/Right (-35 to +35 deg)
   const [ear, setEar] = useState(0.28);  // Eye Aspect Ratio (>0.25 open, <0.20 closed)
-  
+
+  // Camera / MediaPipe states
+  const [isLiveCamera, setIsLiveCamera] = useState(false);
+  const [cameraStarting, setCameraStarting] = useState(false);
+  const [cameraError, setCameraError] = useState(null);
+
   // Dwell state
   const [dwellProgress, setDwellProgress] = useState(0);
   const [dwellTarget, setDwellTarget] = useState(null);
-  
+
   // Sensitivity: 'high' (ALS micro-gestures) or 'standard'
   const [sensitivity, setSensitivity] = useState('standard');
   const [voiceFeedbackEnabled, setVoiceFeedbackEnabled] = useState(true);
   const [lastExecuted, setLastExecuted] = useState(null);
+
   const dwellTimerRef = useRef(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
+  const faceMeshRef = useRef(null);
+  const cameraUtilRef = useRef(null);
+  const lastApiCallTimeRef = useRef(0);
+  const consecutiveBlinksRef = useRef(0);
+  const lastActionExecutedTimeRef = useRef(0);
 
   // Sound & Speech synthesizer
   const speakFeedback = useCallback((text) => {
@@ -63,6 +121,11 @@ export default function MotorHandsFree({
 
   // Execute Action Handler
   const executeAction = useCallback((actionKey) => {
+    const now = Date.now();
+    // Debounce re-execution
+    if (now - lastActionExecutedTimeRef.current < 1500) return;
+    lastActionExecutedTimeRef.current = now;
+
     setLastExecuted(actionKey);
 
     if (actionKey === 'YES') {
@@ -101,13 +164,15 @@ export default function MotorHandsFree({
       speakFeedback('Bed repositioning assistance requested');
     }
 
-    // Auto-reset biomechanical gauges smoothly
-    setTimeout(() => {
-      setPitch(0);
-      setYaw(0);
-      setEar(0.28);
-    }, 2200);
-  }, [setMotorAction, setMotorFeedback, handleTriggerSOS, speakFeedback]);
+    // Auto-reset biomechanical gauges smoothly if in simulation
+    if (!isLiveCamera) {
+      setTimeout(() => {
+        setPitch(0);
+        setYaw(0);
+        setEar(0.28);
+      }, 2200);
+    }
+  }, [isLiveCamera, setMotorAction, setMotorFeedback, handleTriggerSOS, speakFeedback]);
 
   // Dwell countdown timer
   useEffect(() => {
@@ -149,6 +214,211 @@ export default function MotorHandsFree({
     setDwellTarget(null);
     setDwellProgress(0);
   };
+
+  // Process MediaPipe FaceMesh results
+  const onFaceResults = useCallback((results) => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+      return;
+    }
+
+    const lms = results.multiFaceLandmarks[0];
+
+    // Key landmarks:
+    // 10: Top forehead
+    // 152: Bottom of chin
+    // 234: Left face border
+    // 454: Right face border
+    const forehead = lms[10];
+    const chin = lms[152];
+    const leftCheek = lms[234];
+    const rightCheek = lms[454];
+
+    // Pitch: vertical nod (angle from z/y coordinates)
+    const dy = chin.y - forehead.y;
+    const dzPitch = (chin.z || 0) - (forehead.z || 0);
+    const rawPitch = Math.atan2(dzPitch, dy) * (180 / Math.PI) * 1.5;
+
+    // Yaw: horizontal shake (angle from z/x coordinates)
+    const dx = rightCheek.x - leftCheek.x;
+    const dzYaw = (rightCheek.z || 0) - (leftCheek.z || 0);
+    const rawYaw = Math.atan2(dzYaw, dx) * (180 / Math.PI) * 1.5;
+
+    // EAR:
+    // Left eye: 33 (outer), 133 (inner), 160 (top1), 158 (top2), 144 (bot1), 153 (bot2)
+    const leftEAR = calculateEyeEAR(lms[33], lms[133], lms[160], lms[158], lms[144], lms[153]);
+    // Right eye: 263 (outer), 362 (inner), 385 (top1), 387 (top2), 380 (bot1), 373 (bot2)
+    const rightEAR = calculateEyeEAR(lms[263], lms[362], lms[385], lms[387], lms[380], lms[373]);
+    const computedEAR = Math.max(0.05, Math.min(0.40, (leftEAR + rightEAR) / 2.0));
+
+    // Clamp values
+    const clampedPitch = Math.round(Math.max(-35, Math.min(35, rawPitch)));
+    const clampedYaw = Math.round(Math.max(-45, Math.min(45, rawYaw)));
+    const roundedEAR = Number(computedEAR.toFixed(2));
+
+    setPitch(clampedPitch);
+    setYaw(clampedYaw);
+    setEar(roundedEAR);
+
+    // Track blinks
+    if (roundedEAR < 0.20) {
+      consecutiveBlinksRef.current += 1;
+    } else {
+      consecutiveBlinksRef.current = 0;
+    }
+
+    // Draw small facial wireframe landmark mesh onto canvas
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      ctx.strokeStyle = '#B45309';
+      ctx.lineWidth = 1;
+      const keyIdxs = [1, 10, 152, 234, 454, 33, 133, 263, 362];
+      keyIdxs.forEach((idx) => {
+        const pt = lms[idx];
+        if (pt) {
+          ctx.beginPath();
+          ctx.arc(pt.x * canvas.width, pt.y * canvas.height, 2, 0, Math.PI * 2);
+          ctx.fillStyle = idx === 1 ? '#15803D' : '#0F766E';
+          ctx.fill();
+        }
+      });
+    }
+
+    // Call backend API /api/face-control/detect-gesture (debounced to 250ms)
+    const now = Date.now();
+    if (now - lastApiCallTimeRef.current > 250) {
+      lastApiCallTimeRef.current = now;
+      api.detectFaceGesture({
+        ear: roundedEAR,
+        pitch: clampedPitch,
+        yaw: clampedYaw,
+        consecutive_blinks: consecutiveBlinksRef.current,
+      }).then((resp) => {
+        if (!resp) return;
+        if (resp.action === 'YES_CONFIRM') {
+          executeAction('YES');
+        } else if (resp.action === 'NO_CANCEL') {
+          executeAction('NO');
+        } else if (resp.action === 'DOUBLE_BLINK_EMERGENCY') {
+          executeAction('BLINK');
+        }
+      }).catch((e) => {
+        console.warn('Backend face gesture error:', e);
+      });
+    }
+  }, [executeAction]);
+
+  // Clean stop for camera and FaceMesh
+  const stopLiveCamera = useCallback(() => {
+    try {
+      if (cameraUtilRef.current) {
+        cameraUtilRef.current.stop();
+        cameraUtilRef.current = null;
+      }
+      if (faceMeshRef.current) {
+        faceMeshRef.current.close();
+        faceMeshRef.current = null;
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+      setIsLiveCamera(false);
+      setPitch(0);
+      setYaw(0);
+      setEar(0.28);
+    } catch (e) {
+      console.warn('Error stopping face camera:', e);
+    }
+  }, []);
+
+  // Start live WebRTC + Face Mesh
+  const startLiveCamera = async () => {
+    setCameraStarting(true);
+    setCameraError(null);
+    try {
+      if (!navigator?.mediaDevices?.getUserMedia) {
+        throw new Error('WebRTC Camera API not supported.');
+      }
+      await loadMediaPipeFaceMesh();
+
+      if (!window.FaceMesh) {
+        throw new Error('FaceMesh library could not be loaded.');
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 320 }, height: { ideal: 240 }, facingMode: 'user' },
+        audio: false,
+      });
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play().catch((e) => console.warn('Video play caught:', e));
+      }
+
+      const faceMesh = new window.FaceMesh({
+        locateFile: (file) =>
+          `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`,
+      });
+
+      faceMesh.setOptions({
+        maxNumFaces: 1,
+        refineLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+      });
+
+      faceMesh.onResults(onFaceResults);
+      faceMeshRef.current = faceMesh;
+
+      if (window.Camera && videoRef.current) {
+        const cam = new window.Camera(videoRef.current, {
+          onFrame: async () => {
+            if (faceMeshRef.current && videoRef.current) {
+              await faceMeshRef.current.send({ image: videoRef.current });
+            }
+          },
+          width: 320,
+          height: 240,
+        });
+        cam.start();
+        cameraUtilRef.current = cam;
+      }
+
+      setIsLiveCamera(true);
+    } catch (err) {
+      console.warn('FaceMesh initialization failed:', err);
+      setCameraError(
+        err.name === 'NotAllowedError'
+          ? 'Camera permission denied. Simulation active.'
+          : 'Webcam not detected or FaceMesh CDN unreachable. Simulation active.'
+      );
+      setIsLiveCamera(false);
+    } finally {
+      setCameraStarting(false);
+    }
+  };
+
+  const toggleCamera = () => {
+    if (isLiveCamera) {
+      stopLiveCamera();
+    } else {
+      startLiveCamera();
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopLiveCamera();
+    };
+  }, [stopLiveCamera]);
 
   // Thresholds based on sensitivity
   const pitchThreshold = sensitivity === 'high' ? 10 : 18;
@@ -229,7 +499,40 @@ export default function MotorHandsFree({
         </div>
 
         {/* Quick Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {/* Live Camera Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleCamera}
+            disabled={cameraStarting}
+            style={{
+              padding: '8px 14px',
+              borderRadius: '10px',
+              backgroundColor: isLiveCamera ? '#DCFCE7' : '#FFFFFF',
+              border: isLiveCamera ? '1.5px solid #15803D' : '1px solid #E5DECE',
+              color: isLiveCamera ? '#15803D' : '#1C1917',
+              fontSize: '12px',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: cameraStarting ? 'wait' : 'pointer',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+            }}
+          >
+            {cameraStarting ? (
+              '⏳ Loading Face Mesh…'
+            ) : isLiveCamera ? (
+              <>
+                <VideoOff size={15} color="#15803D" /> Live Face Mesh Active
+              </>
+            ) : (
+              <>
+                <Camera size={15} color="#B45309" /> 🟢 Start Live Face Camera
+              </>
+            )}
+          </button>
+
           {/* Audio TTS Toggle */}
           <button
             type="button"
@@ -245,6 +548,7 @@ export default function MotorHandsFree({
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
+              cursor: 'pointer',
             }}
             title="Toggle synthesized voice confirmation"
           >
@@ -268,6 +572,7 @@ export default function MotorHandsFree({
               alignItems: 'center',
               gap: '6px',
               boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+              cursor: 'pointer',
             }}
           >
             <Sliders size={15} />
@@ -275,6 +580,36 @@ export default function MotorHandsFree({
           </button>
         </div>
       </div>
+
+      {cameraError && (
+        <div
+          style={{
+            padding: '8px 14px',
+            borderRadius: '8px',
+            backgroundColor: '#FEF3C7',
+            border: '1px solid #FDE68A',
+            color: '#B45309',
+            fontSize: '12px',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <AlertCircle size={15} /> {cameraError}
+        </div>
+      )}
+
+      {/* Hidden WebRTC video element for MediaPipe stream */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        style={{
+          display: 'none',
+        }}
+      />
 
       {/* Top Visualizer: Biomechanical 3D Avatar + Telemetry Gauges */}
       <div
@@ -285,7 +620,7 @@ export default function MotorHandsFree({
           alignItems: 'stretch',
         }}
       >
-        {/* Visualizer 1: Simulated 3D Face Wireframe Avatar */}
+        {/* Visualizer 1: Simulated / Live 3D Face Wireframe Avatar */}
         <div
           style={{
             backgroundColor: '#FFFFFF',
@@ -315,7 +650,7 @@ export default function MotorHandsFree({
               textTransform: 'uppercase',
             }}
           >
-            <Activity size={13} color="#15803D" /> Face Mesh Pose 3D
+            <Activity size={13} color="#15803D" /> {isLiveCamera ? 'Live Face Mesh 3D' : 'Face Mesh Pose 3D'}
           </div>
 
           <div
@@ -344,8 +679,9 @@ export default function MotorHandsFree({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'transform 0.25s ease-out',
+              transition: 'transform 0.15s ease-out',
               transform: `perspective(400px) rotateX(${pitch * -1.2}deg) rotateY(${yaw * 1.2}deg)`,
+              position: 'relative',
             }}
           >
             <svg width="150" height="150" viewBox="0 0 150 150">
@@ -420,6 +756,23 @@ export default function MotorHandsFree({
                 strokeLinecap="round"
               />
             </svg>
+
+            {/* Overlay Canvas for Real MediaPipe Landmark Dots */}
+            {isLiveCamera && (
+              <canvas
+                ref={canvasRef}
+                width={160}
+                height={160}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
           </div>
 
           <div
