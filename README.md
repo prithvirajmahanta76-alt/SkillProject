@@ -193,11 +193,57 @@ backend/
 
 ## 8. Hackathon Execution Roadmap (MoSCoW Matrix)
 
-| Milestone | Deliverables | Target Phase |
+| Milestone | Deliverables | Target Phase | Status |
+| :--- | :--- | :--- | :--- |
+| **Must Have (P0)** | 2-Way Sign-to-Speech & Speech-to-Sign with 25 ISL signs and Gemini Grammar. | Phase 1 & 2 | ✅ Completed & Verified |
+| **Must Have (P0)** | Hospital Kiosk Dual-Screen layout (Doctor view + Patient view). | Phase 2 | ✅ Completed & Verified |
+| **Must Have (P0)** | 1-Tap SOS Emergency Cards with Regional Audio Alert & 5s grace window. | Phase 2 | ✅ Completed & Verified |
+| **Should Have (P1)** | Blind Mode: Camera Medicine & Signboard Scanner using Gemini Vision. | Phase 3 | ✅ Completed & Verified |
+| **Should Have (P1)** | Motor Mode: Hands-Free Head-Nod & Blink detector with MediaPipe Face Mesh. | Phase 3 | ✅ Completed & Verified |
+| **Should Have (P1)** | ABDM FHIR Health Records, ICD-10 & SNOMED Coding, Verifiable OPD Slips. | Phase 5 | ✅ Completed & Verified |
+| **Could Have (P2)** | Multi-Language Toggle (Hindi, Odia, Telugu, English) across all views. | Phase 4 | ✅ Completed & Verified |
+| **Could Have (P2)** | Hospital Impact, ABDM M1-M3 Certification, and Cost-Benefit ROI Matrix. | Phase 6 | ✅ Completed & Verified |
+
+---
+
+## 9. Quick Start Guide
+
+### 🚀 Launching Both Servers
+
+#### Option A: One-Click Windows Batch Scripts
+- **Start Backend (FastAPI):** Double-click `start_backend.bat` (or run in terminal):
+  ```powershell
+  .\start_backend.bat
+  ```
+- **Start Frontend (React + Vite):** Double-click `start_frontend.bat` (or run in terminal):
+  ```powershell
+  .\start_frontend.bat
+  ```
+
+#### Option B: Manual Command Line
+1. **Backend Server:**
+   ```bash
+   cd backend
+   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+   ```
+2. **Frontend Client:**
+   ```bash
+   cd frontend
+   npm run dev -- --host 127.0.0.1 --port 5173
+   ```
+
+---
+
+## 10. Live Verification URLs
+
+| Service | URL | Notes |
 | :--- | :--- | :--- |
-| **Must Have (P0)** | 2-Way Sign-to-Speech & Speech-to-Sign with 20 ISL signs and Gemini Grammar. | Phase 1 & 2 |
-| **Must Have (P0)** | Hospital Kiosk Dual-Screen layout (Doctor view + Patient view). | Phase 2 |
-| **Must Have (P0)** | 1-Tap SOS Emergency Cards with Regional Audio Alert. | Phase 2 |
-| **Should Have (P1)** | Blind Mode: Camera Medicine & Signboard Scanner using Gemini Vision. | Phase 3 |
-| **Should Have (P1)** | Motor Mode: Hands-Free Head-Nod & Blink detector. | Phase 3 |
-| **Could Have (P2)** | Multi-Language Toggle (Hindi, Odia, Telugu, English). | Phase 3 |
+| **Frontend Web App** | [http://localhost:5173/](http://localhost:5173/) | All 6 clinical accessibility phases & workstation views |
+| **Interactive API Documentation** | [http://localhost:8000/docs](http://localhost:8000/docs) | Interactive Swagger UI covering all 28 API routes |
+| **API ReDoc** | [http://localhost:8000/redoc](http://localhost:8000/redoc) | Clean OpenAPI specifications reference |
+| **Backend Health Check** | [http://localhost:8000/health](http://localhost:8000/health) | `{"status":"healthy","version":"1.0.0"}` |
+| **Official Hospital OPD Slip** | [http://localhost:8000/api/consultation/slip-html/OPD-CIVIL-1794156577](http://localhost:8000/api/consultation/slip-html/OPD-CIVIL-1794156577) | Printable hospital prescription with digital SHA-256 hash |
+| **ABHA Health Smart Card** | [http://localhost:8000/api/consultation/abha-card/PAT-9842](http://localhost:8000/api/consultation/abha-card/PAT-9842) | Ayushman Bharat Health Account disability ID card with allergy alert |
+| **Edge Resilience Status** | [http://localhost:8000/api/consultation/edge/network-status](http://localhost:8000/api/consultation/edge/network-status) | Zero-Internet autonomous PHC clinic resilience monitor |
+| **WebSocket Stream** | `ws://localhost:8000/api/gesture/ws/stream` | 60 FPS real-time 21-landmark ISL gesture classification |
+
