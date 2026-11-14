@@ -95,6 +95,42 @@ def init_db():
             time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         ))
 
+    # Pre-seed Default OPD Consultation referenced by App.jsx (OPD-CIVIL-1794156577)
+    cursor.execute("SELECT id FROM consultations WHERE id = 'OPD-CIVIL-1794156577'")
+    if not cursor.fetchone():
+        import hashlib as _hashlib
+        _now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        _payload = "OPD-CIVIL-1794156577|91-4829-1039-4820|Severe acute abdominal pain|Dr. Anjali Mishra|" + _now
+        _hash = _hashlib.sha256(_payload.encode()).hexdigest()
+        _rx = json.dumps([
+            {"name": "Dolo 650 (Paracetamol)", "dosage": "1 tablet twice daily as needed", "duration": "3 days", "instructions": "Take after food if fever or pain occurs"},
+            {"name": "ORS Sachet", "dosage": "1 sachet dissolved in 200ml water", "duration": "2 days", "instructions": "Drink slowly to maintain hydration"},
+            {"name": "Ranitidine 150mg", "dosage": "1 tablet twice daily", "duration": "5 days", "instructions": "Take 30 minutes before meals"},
+        ])
+        cursor.execute("""
+            INSERT INTO consultations (
+                id, patient_id, patient_name, abha_id, doctor_name, department,
+                chief_complaint, regional_complaint, isl_gloss_tokens, icd10_code,
+                snomed_ct_id, prescribed_medicines, clinical_notes, verification_hash, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "OPD-CIVIL-1794156577",
+            "PAT-9842",
+            "Rahul Sahoo",
+            "91-4829-1039-4820",
+            "Dr. Anjali Mishra",
+            "General Medicine OPD - Unit 4",
+            "Severe acute abdominal pain for 2 days",
+            "डॉक्टर साहब, मेरे पेट में बहुत तेज़ दर्द हो रहा है।",
+            json.dumps(["I", "PAIN", "STOMACH"]),
+            "R10.9",
+            "21522001",
+            _rx,
+            "Patient examined via SignBridge Universal Two-Way Kiosk. Vitals stable. Advised ultrasound abdomen if pain persists. No beta-lactam antibiotics prescribed (documented Penicillin allergy).",
+            _hash,
+            _now,
+        ))
+
     conn.commit()
     conn.close()
 
@@ -299,7 +335,22 @@ async def get_consultation_slip(consultation_id: str) -> ConsultationSlipRespons
 )
 async def get_consultation_slip_html(consultation_id: str):
     """Renders a pixel-perfect, printable official Government Hospital OPD slip with ABHA barcode."""
-    data = await get_consultation_slip(consultation_id)
+    try:
+        data = await get_consultation_slip(consultation_id)
+    except HTTPException as exc:
+        if exc.status_code == 404:
+            return HTMLResponse(content=f"""<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Slip Not Found</title>
+<style>body{{font-family:sans-serif;background:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}}
+.card{{background:#fff;border:2px solid #ef4444;border-radius:12px;padding:40px;max-width:500px;text-align:center}}
+h2{{color:#b91c1c;margin:0 0 12px}}p{{color:#475569;font-size:14px}}</style></head>
+<body><div class="card">
+<h2>⚠️ OPD Slip Not Found</h2>
+<p>Consultation ID <strong>{consultation_id}</strong> was not found in the SignBridge database.</p>
+<p>Please create a consultation via the kiosk first, or use <code>OPD-CIVIL-1794156577</code> for the demo slip.</p>
+</div></body></html>""", status_code=404)
+        raise
 
     rx_rows = "".join([
         f"""<tr>
