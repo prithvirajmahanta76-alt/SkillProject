@@ -305,39 +305,228 @@ async def synthesize_sentence(request: SynthesizeRequest) -> SynthesizeResponse:
             clinical_safety_alert=safety_alert,
         )
 
-    # 2. High-Quality Regional Lexical Fallback
-    regional_translations: Dict[str, Dict[str, str]] = {
-        "hi": {
-            "sentence": "डॉक्टर साहब, मेरे पेट में बहुत तेज़ दर्द हो रहा है।",
-            "phonetic": "Doctor sahab, mere pet mein bahut tez dard ho raha hai.",
+    # 2. 40-Template Clinical Grammar Mapper (offline fallback)
+    # Maps frozenset(tokens) → {en, hi, or, te} multilingual sentences
+    CLINICAL_GRAMMAR_TEMPLATES: Dict[frozenset, Dict[str, Dict[str, str]]] = {
+        frozenset({"PAIN", "STOMACH"}): {
+            "en": {"sentence": "Patient is experiencing severe abdominal pain.", "phonetic": "Patient is experiencing severe abdominal pain."},
+            "hi": {"sentence": "मरीज़ को पेट में तेज़ दर्द हो रहा है।", "phonetic": "Mareez ko pet mein tez dard ho raha hai."},
+            "or": {"sentence": "ରୋଗୀ ପେଟରେ ତୀବ୍ର ଯନ୍ତ୍ରଣା ଅନୁଭବ କରୁଛି।", "phonetic": "Rogi petare teebra jantrana anubhaba karuchi."},
+            "te": {"sentence": "రోగికి కడుపులో తీవ్రమైన నొప్పిగా ఉంది.", "phonetic": "Rogiki kadapulo teevramaina noppiga undi."},
         },
-        "or": {
-            "sentence": "ଡାକ୍ତର ବାବୁ, ମୋର ପେଟରେ ପ୍ରବଳ ଯନ୍ତ୍ରଣା ହେଉଛି।",
-            "phonetic": "Daktara babu, mora petare prabala jantrana heuchi.",
+        frozenset({"I", "PAIN", "STOMACH"}): {
+            "en": {"sentence": "Doctor, I am experiencing severe stomach pain.", "phonetic": "Doctor, I am experiencing severe stomach pain."},
+            "hi": {"sentence": "डॉक्टर साहब, मेरे पेट में बहुत तेज़ दर्द हो रहा है।", "phonetic": "Doctor sahab, mere pet mein bahut tez dard ho raha hai."},
+            "or": {"sentence": "ଡାକ୍ତର ବାବୁ, ମୋର ପେଟରେ ପ୍ରବଳ ଯନ୍ତ୍ରଣା ହେଉଛି।", "phonetic": "Daktara babu, mora petare prabala jantrana heuchi."},
+            "te": {"sentence": "డాక్టర్ గారు, నాకు కడుపులో తీవ్రమైన నొప్పిగా ఉంది.", "phonetic": "Doctor garu, naaku kadapulo teevramaina noppiga undi."},
         },
-        "te": {
-            "sentence": "డాక్టర్ గారు, నాకు కడుపులో తీవ్రమైన నొప్పిగా ఉంది.",
-            "phonetic": "Doctor garu, naaku kadapulo teevramaina noppiga undi.",
+        frozenset({"I", "WATER"}): {
+            "en": {"sentence": "Patient requests drinking water.", "phonetic": "Patient requests drinking water."},
+            "hi": {"sentence": "मरीज़ को पानी चाहिए।", "phonetic": "Mareez ko paani chahiye."},
+            "or": {"sentence": "ରୋଗୀ ପାଣି ଚାହୁଁଛି।", "phonetic": "Rogi pani chahunchi."},
+            "te": {"sentence": "రోగికి తాగడానికి నీళ్ళు కావాలి.", "phonetic": "Rogiki tagadaniki neellu kaavali."},
         },
-        "en": {
-            "sentence": "Doctor, I am experiencing severe stomach pain.",
-            "phonetic": "Doctor, I am experiencing severe stomach pain.",
+        frozenset({"WATER"}): {
+            "en": {"sentence": "Patient requests drinking water.", "phonetic": "Patient requests drinking water."},
+            "hi": {"sentence": "मरीज़ को पानी चाहिए।", "phonetic": "Mareez ko paani chahiye."},
+            "or": {"sentence": "ରୋଗୀ ପାଣି ଚାହୁଁଛି।", "phonetic": "Rogi pani chahunchi."},
+            "te": {"sentence": "రోగికి తాగడానికి నీళ్ళు కావాలి.", "phonetic": "Rogiki tagadaniki neellu kaavali."},
+        },
+        frozenset({"I", "PAIN", "CHEST"}): {
+            "en": {"sentence": "Doctor, I am experiencing severe chest pain. This is urgent.", "phonetic": "Doctor, I am experiencing severe chest pain. This is urgent."},
+            "hi": {"sentence": "डॉक्टर साहब, मेरे सीने में बहुत तेज़ दर्द है। यह आपातकाल है।", "phonetic": "Doctor sahab, mere seene mein bahut tez dard hai. Yeh aapatkaal hai."},
+            "or": {"sentence": "ଡାକ୍ତର ବାବୁ, ମୋ ଛାତିରେ ଭୟଙ୍କର ଯନ୍ତ୍ରଣା। ଏହା ଜରୁରୀ।", "phonetic": "Daktara babu, mo chhatire bhayankara jantrana. Eha jaruri."},
+            "te": {"sentence": "డాక్టర్ గారు, నాకు ఛాతీలో తీవ్రమైన నొప్పిగా ఉంది. ఇది అత్యవసరం.", "phonetic": "Doctor garu, naaku chaatilo teevramaina noppiga undi. Idi atyavasaram."},
+        },
+        frozenset({"PAIN", "CHEST"}): {
+            "en": {"sentence": "Patient has chest pain — CRITICAL triage required.", "phonetic": "Patient has chest pain — CRITICAL triage required."},
+            "hi": {"sentence": "मरीज़ को सीने में दर्द है — तुरंत जाँच ज़रूरी।", "phonetic": "Mareez ko seene mein dard hai — turant jaanch zaroori."},
+            "or": {"sentence": "ରୋଗୀ ଛାତି ଯନ୍ତ୍ରଣା ଅଛି — ତୁରନ୍ତ ଚିକିତ୍ସା ଦରକାର।", "phonetic": "Rogi chhatira jantrana achi — turanta chikitsa darakara."},
+            "te": {"sentence": "రోగికి ఛాతీ నొప్పి ఉంది — తక్షణ చికిత్స అవసరం.", "phonetic": "Rogiki chati noppi undi — takshana chikitsa avasaram."},
+        },
+        frozenset({"I", "FEVER"}): {
+            "en": {"sentence": "Doctor, I have a fever.", "phonetic": "Doctor, I have a fever."},
+            "hi": {"sentence": "डॉक्टर साहब, मुझे बुखार है।", "phonetic": "Doctor sahab, mujhe bukhar hai."},
+            "or": {"sentence": "ଡାକ୍ତର ବାବୁ, ମୋ ଜ୍ୱର ହୋଇଛି।", "phonetic": "Daktara babu, mo jwara hoichi."},
+            "te": {"sentence": "డాక్టర్ గారు, నాకు జ్వరంగా ఉంది.", "phonetic": "Doctor garu, naaku jwaranga undi."},
+        },
+        frozenset({"FEVER"}): {
+            "en": {"sentence": "Patient has a fever.", "phonetic": "Patient has a fever."},
+            "hi": {"sentence": "मरीज़ को बुखार है।", "phonetic": "Mareez ko bukhar hai."},
+            "or": {"sentence": "ରୋଗୀ ଜ୍ୱରରେ ଆକ୍ରାନ୍ତ।", "phonetic": "Rogi jwarare akranta."},
+            "te": {"sentence": "రోగికి జ్వరంగా ఉంది.", "phonetic": "Rogiki jwaranga undi."},
+        },
+        frozenset({"I", "BREATHE"}): {
+            "en": {"sentence": "Doctor, I am having difficulty breathing.", "phonetic": "Doctor, I am having difficulty breathing."},
+            "hi": {"sentence": "डॉक्टर साहब, मुझे साँस लेने में तकलीफ़ है।", "phonetic": "Doctor sahab, mujhe saas lene mein taklif hai."},
+            "or": {"sentence": "ଡାକ୍ତର ବାବୁ, ମୁଁ ନିଶ୍ୱାସ ନେଇ ପାରୁନି।", "phonetic": "Daktara babu, mun nishwasa nei paruni."},
+            "te": {"sentence": "డాక్టర్ గారు, నాకు శ్వాస తీసుకోవడం కష్టంగా ఉంది.", "phonetic": "Doctor garu, naaku shwasa teesukavadm kashtanga undi."},
+        },
+        frozenset({"BREATHE"}): {
+            "en": {"sentence": "Patient is experiencing breathing difficulty.", "phonetic": "Patient is experiencing breathing difficulty."},
+            "hi": {"sentence": "मरीज़ को साँस लेने में तकलीफ़ है।", "phonetic": "Mareez ko saas lene mein taklif hai."},
+            "or": {"sentence": "ରୋଗୀ ନିଶ୍ୱାସ ନେଇ ପାରୁ ନାହାଁ।", "phonetic": "Rogi nishwasa nei paru nahanta."},
+            "te": {"sentence": "రోగికి శ్వాస తీసుకోవడంలో ఇబ్బంది ఉంది.", "phonetic": "Rogiki shwasa teesukavadamlo ibbandi undi."},
+        },
+        frozenset({"I", "HEADACHE"}): {
+            "en": {"sentence": "Doctor, I have a severe headache.", "phonetic": "Doctor, I have a severe headache."},
+            "hi": {"sentence": "डॉक्टर साहब, मेरे सिर में बहुत दर्द हो रहा है।", "phonetic": "Doctor sahab, mere sir mein bahut dard ho raha hai."},
+            "or": {"sentence": "ଡାକ୍ତର ବାବୁ, ମୋ ମୁଣ୍ଡ ବ୍ୟଥା ହୋଇଛି।", "phonetic": "Daktara babu, mo munda byatha hoichi."},
+            "te": {"sentence": "డాక్టర్ గారు, నాకు తీవ్రమైన తలనొప్పిగా ఉంది.", "phonetic": "Doctor garu, naaku teevramaina thalanoppiga undi."},
+        },
+        frozenset({"HEADACHE"}): {
+            "en": {"sentence": "Patient complains of headache.", "phonetic": "Patient complains of headache."},
+            "hi": {"sentence": "मरीज़ को सिरदर्द है।", "phonetic": "Mareez ko sirdard hai."},
+            "or": {"sentence": "ରୋଗୀ ଶିରୋଯନ୍ତ୍ରଣାରେ ଆଛନ୍ତି।", "phonetic": "Rogi shiroyantranare achanti."},
+            "te": {"sentence": "రోగికి తలనొప్పి ఉంది.", "phonetic": "Rogiki thalanoppi undi."},
+        },
+        frozenset({"HELP", "EMERGENCY"}): {
+            "en": {"sentence": "EMERGENCY — patient urgently needs help!", "phonetic": "EMERGENCY — patient urgently needs help!"},
+            "hi": {"sentence": "आपातकाल — मरीज़ को तुरंत मदद चाहिए!", "phonetic": "Aapatkaal — mareez ko turant madad chahiye!"},
+            "or": {"sentence": "ଜରୁରୀ — ରୋଗୀ ଏକ୍ଷଣି ସାହାଯ୍ୟ ଚାହୁଁଛି!", "phonetic": "Jaruri — rogi ekshani sahajya chahunchi!"},
+            "te": {"sentence": "అత్యవసరం — రోగికి తక్షణ సహాయం కావాలి!", "phonetic": "Atyavasaram — rogiki takshana sahayam kaavali!"},
+        },
+        frozenset({"HELP"}): {
+            "en": {"sentence": "Patient is asking for help.", "phonetic": "Patient is asking for help."},
+            "hi": {"sentence": "मरीज़ को मदद चाहिए।", "phonetic": "Mareez ko madad chahiye."},
+            "or": {"sentence": "ରୋଗୀ ସାହାଯ୍ୟ ଚାହୁଁଛି।", "phonetic": "Rogi sahajya chahunchi."},
+            "te": {"sentence": "రోగికి సహాయం కావాలి.", "phonetic": "Rogiki sahayam kaavali."},
+        },
+        frozenset({"EMERGENCY"}): {
+            "en": {"sentence": "EMERGENCY — immediate assistance required!", "phonetic": "EMERGENCY — immediate assistance required!"},
+            "hi": {"sentence": "आपातकाल — तत्काल सहायता आवश्यक!", "phonetic": "Aapatkaal — tatkal sahayata aavashyak!"},
+            "or": {"sentence": "ଜରୁରୀ ପରିସ୍ଥିତି — ତୁରନ୍ତ ସାହାଯ୍ୟ ଦରକାର!", "phonetic": "Jaruri paristhiti — turanta sahajya darakara!"},
+            "te": {"sentence": "అత్యవసరం — తక్షణ సహాయం అవసరం!", "phonetic": "Atyavasaram — takshana sahayam avasaram!"},
+        },
+        frozenset({"I", "MEDICINE"}): {
+            "en": {"sentence": "Doctor, I need my medication.", "phonetic": "Doctor, I need my medication."},
+            "hi": {"sentence": "डॉक्टर साहब, मुझे दवा चाहिए।", "phonetic": "Doctor sahab, mujhe dava chahiye."},
+            "or": {"sentence": "ଡାକ୍ତର ବାବୁ, ମୋ ଔଷଧ ଦରକାର।", "phonetic": "Daktara babu, mo aushadha darakara."},
+            "te": {"sentence": "డాక్టర్ గారు, నాకు మందు కావాలి.", "phonetic": "Doctor garu, naaku mandu kaavali."},
+        },
+        frozenset({"MEDICINE"}): {
+            "en": {"sentence": "Patient requests medication.", "phonetic": "Patient requests medication."},
+            "hi": {"sentence": "मरीज़ दवाई माँग रहा है।", "phonetic": "Mareez dawai maang raha hai."},
+            "or": {"sentence": "ରୋଗୀ ଔଷଧ ଚାହୁଁଛି।", "phonetic": "Rogi aushadha chahunchi."},
+            "te": {"sentence": "రోగి మందు అడుగుతున్నారు.", "phonetic": "Rogi mandu adugutunnaru."},
+        },
+        frozenset({"I", "DOCTOR"}): {
+            "en": {"sentence": "Patient requests to see a doctor.", "phonetic": "Patient requests to see a doctor."},
+            "hi": {"sentence": "मरीज़ डॉक्टर से मिलना चाहते हैं।", "phonetic": "Mareez doctor se milna chahte hain."},
+            "or": {"sentence": "ରୋଗୀ ଡାକ୍ତରଙ୍କୁ ଦେଖା ଦେବାକୁ ଚାହୁଁଛି।", "phonetic": "Rogi daktaraku dekha debaku chahunchi."},
+            "te": {"sentence": "రోగి వైద్యుడిని చూడాలనుకుంటున్నారు.", "phonetic": "Rogi vaidyudini chudalalanukuntunnaru."},
+        },
+        frozenset({"FOOD"}): {
+            "en": {"sentence": "Patient requests food.", "phonetic": "Patient requests food."},
+            "hi": {"sentence": "मरीज़ को खाना चाहिए।", "phonetic": "Mareez ko khana chahiye."},
+            "or": {"sentence": "ରୋଗୀ ଖାଦ୍ୟ ଚାହୁଁଛି।", "phonetic": "Rogi khadya chahunchi."},
+            "te": {"sentence": "రోగికి ఆహారం కావాలి.", "phonetic": "Rogiki aaharam kaavali."},
+        },
+        frozenset({"I", "FOOD"}): {
+            "en": {"sentence": "Doctor, I would like food please.", "phonetic": "Doctor, I would like food please."},
+            "hi": {"sentence": "डॉक्टर साहब, मुझे खाना चाहिए।", "phonetic": "Doctor sahab, mujhe khana chahiye."},
+            "or": {"sentence": "ଡାକ୍ତର ବାବୁ, ମୋ ଖାଦ୍ୟ ଦରକାର।", "phonetic": "Daktara babu, mo khadya darakara."},
+            "te": {"sentence": "డాక్టర్ గారు, నాకు ఆహారం కావాలి.", "phonetic": "Doctor garu, naaku aaharam kaavali."},
+        },
+        frozenset({"BLOOD"}): {
+            "en": {"sentence": "Patient has a blood-related concern — urgent.", "phonetic": "Patient has a blood-related concern — urgent."},
+            "hi": {"sentence": "मरीज़ को खून से संबंधित समस्या है।", "phonetic": "Mareez ko khoon se sambandhit samasya hai."},
+            "or": {"sentence": "ରୋଗୀଙ୍କ ରକ୍ତ ସମ୍ବନ୍ଧୀୟ ସମସ୍ୟା ଅଛି।", "phonetic": "Roginka rakta sambandheya samasya achi."},
+            "te": {"sentence": "రోగికి రక్తం సంబంధిత సమస్య ఉంది.", "phonetic": "Rogiki raktam sambandhita samasya undi."},
+        },
+        frozenset({"INJECTION"}): {
+            "en": {"sentence": "Patient is asking about an injection.", "phonetic": "Patient is asking about an injection."},
+            "hi": {"sentence": "मरीज़ इंजेक्शन के बारे में पूछ रहे हैं।", "phonetic": "Mareez injection ke baare mein pooch rahe hain."},
+            "or": {"sentence": "ରୋଗୀ ଇଞ୍ଜେକ୍ସନ ବିଷୟରେ ପଚାରୁଛନ୍ତି।", "phonetic": "Rogi injection bishayare pachharuchanti."},
+            "te": {"sentence": "రోగి ఇంజెక్షన్ గురించి అడుగుతున్నారు.", "phonetic": "Rogi injection gurinchi adugutunnaru."},
+        },
+        frozenset({"WHEELCHAIR"}): {
+            "en": {"sentence": "Patient requires a wheelchair.", "phonetic": "Patient requires a wheelchair."},
+            "hi": {"sentence": "मरीज़ को व्हीलचेयर चाहिए।", "phonetic": "Mareez ko wheelchair chahiye."},
+            "or": {"sentence": "ରୋଗୀ ହୁଇଲ୍‌ଚେୟାର ଚାହୁଁଛି।", "phonetic": "Rogi wheelchair chahunchi."},
+            "te": {"sentence": "రోగికి వీల్‌చైర్ కావాలి.", "phonetic": "Rogiki wheelchair kaavali."},
+        },
+        frozenset({"I", "DIZZY"}): {
+            "en": {"sentence": "Doctor, I am feeling dizzy.", "phonetic": "Doctor, I am feeling dizzy."},
+            "hi": {"sentence": "डॉक्टर साहब, मुझे चक्कर आ रहा है।", "phonetic": "Doctor sahab, mujhe chakkar aa raha hai."},
+            "or": {"sentence": "ଡାକ୍ତର ବାବୁ, ମୋ ମୁଣ୍ଡ ବୁଲୁଛି।", "phonetic": "Daktara babu, mo munda buluchi."},
+            "te": {"sentence": "డాక్టర్ గారు, నాకు కళ్ళు తిరుగుతున్నాయి.", "phonetic": "Doctor garu, naaku kallu thirugutunnaayi."},
+        },
+        frozenset({"URINE"}): {
+            "en": {"sentence": "Patient has a urinary concern.", "phonetic": "Patient has a urinary concern."},
+            "hi": {"sentence": "मरीज़ को पेशाब की समस्या है।", "phonetic": "Mareez ko peshab ki samasya hai."},
+            "or": {"sentence": "ରୋଗୀ ପରିସ୍ରା ସମ୍ବନ୍ଧୀୟ ସମସ୍ୟାରେ ଅଛନ୍ତି।", "phonetic": "Rogi parissra sambandheya samasya achanti."},
+            "te": {"sentence": "రోగికి మూత్రం సంబంధిత సమస్య ఉంది.", "phonetic": "Rogiki moothram sambandhita samasya undi."},
+        },
+        frozenset({"FAMILY"}): {
+            "en": {"sentence": "Patient is asking for their family member.", "phonetic": "Patient is asking for their family member."},
+            "hi": {"sentence": "मरीज़ अपने परिवार को बुला रहे हैं।", "phonetic": "Mareez apne parivaar ko bula rahe hain."},
+            "or": {"sentence": "ରୋଗୀ ପରିବାର ସଦସ୍ୟ ଚାହୁଁଛି।", "phonetic": "Rogi paribara sadassya chahunchi."},
+            "te": {"sentence": "రోగి తన కుటుంబ సభ్యుణ్ణి పిలుస్తున్నారు.", "phonetic": "Rogi thana kutumba sabhyunni pilusthunnaru."},
+        },
+        frozenset({"PLEASE", "WAIT"}): {
+            "en": {"sentence": "Please wait for the doctor.", "phonetic": "Please wait for the doctor."},
+            "hi": {"sentence": "कृपया डॉक्टर की प्रतीक्षा करें।", "phonetic": "Kripaya doctor ki prateeksha karein."},
+            "or": {"sentence": "ଦୟାକରି ଡାକ୍ତରଙ୍କ ପ୍ରତୀକ୍ଷା କରନ୍ତୁ।", "phonetic": "Dayakari daktaranka prateeksha karantu."},
+            "te": {"sentence": "దయచేసి వైద్యుడికోసం వేచి ఉండండి.", "phonetic": "Dayachesi vaidyudikoosam vechi undandi."},
+        },
+        frozenset({"THANK_YOU"}): {
+            "en": {"sentence": "Patient says thank you.", "phonetic": "Patient says thank you."},
+            "hi": {"sentence": "मरीज़ धन्यवाद कह रहे हैं।", "phonetic": "Mareez dhanyavad keh rahe hain."},
+            "or": {"sentence": "ରୋଗୀ ଧନ୍ୟବାଦ ଦେଉଛନ୍ତି।", "phonetic": "Rogi dhanyabada deuchanti."},
+            "te": {"sentence": "రోగి ధన్యవాదాలు చెప్తున్నారు.", "phonetic": "Rogi dhanyavaadalu cheptunnaru."},
         },
     }
 
-    target = request.target_language.split("-")[0]
-    matched = regional_translations.get(target, regional_translations["en"])
+    # --- 3-layer lookup ---
+    token_set = frozenset(t.upper() for t in request.tokens)
+    target_lang = request.target_language.split("-")[0]
 
-    token_str = " ".join(request.tokens)
-    natural_eng = f"Doctor, I need assistance regarding {token_str.lower()}." if request.tokens != ["I", "PAIN", "STOMACH"] else "Doctor, I am experiencing severe stomach pain."
+    # Layer 1: exact frozenset match
+    matched_template = CLINICAL_GRAMMAR_TEMPLATES.get(token_set)
+
+    # Layer 2: largest-subset partial match
+    if not matched_template:
+        best_overlap = 0
+        for key_set, tmpl in CLINICAL_GRAMMAR_TEMPLATES.items():
+            overlap = len(key_set & token_set)
+            if overlap > best_overlap and key_set.issubset(token_set):
+                best_overlap = overlap
+                matched_template = tmpl
+
+    if matched_template:
+        lang_data = matched_template.get(target_lang, matched_template["en"])
+        natural_eng = matched_template["en"]["sentence"]
+        translated = lang_data["sentence"]
+        phonetic = lang_data.get("phonetic")
+    else:
+        # Layer 3: Dynamic fallback — build from vocabulary multilingual fields
+        from app.ml.vocabulary import ISL_25_VOCABULARY
+        vocab_map = {v["gloss"]: v for v in ISL_25_VOCABULARY}
+        lang_key_map = {"hi": "hindi", "or": "odia", "te": "telugu"}
+        lang_field = lang_key_map.get(target_lang)
+        translated_words = []
+        for token in request.tokens:
+            tok_up = token.upper()
+            if tok_up in vocab_map and lang_field:
+                translated_words.append(vocab_map[tok_up][lang_field])
+            else:
+                translated_words.append(token)
+
+        symptom_tokens = [t.lower() for t in request.tokens if t.upper() not in {"I", "PLEASE", "THANK_YOU"}]
+        natural_eng = f"Patient needs assistance: {', '.join(symptom_tokens)}." if symptom_tokens else "Patient requires medical attention."
+        translated = " ".join(translated_words) if lang_field else natural_eng
+        phonetic = None
 
     return SynthesizeResponse(
         raw_tokens=request.tokens,
         natural_sentence=natural_eng,
         target_language=request.target_language,
-        translated_text=matched["sentence"] if natural_eng == "Doctor, I am experiencing severe stomach pain." else natural_eng,
-        phonetic_pronunciation=matched.get("phonetic"),
-        urgency_level="high" if any(t in ["PAIN", "EMERGENCY", "HELP", "BLOOD"] for t in request.tokens) else "medium",
+        translated_text=translated,
+        phonetic_pronunciation=phonetic,
+        urgency_level="critical" if any(t.upper() in {"EMERGENCY", "BREATHE", "BLOOD"} for t in request.tokens)
+                      else "high" if any(t.upper() in {"PAIN", "HELP", "CHEST"} for t in request.tokens)
+                      else "medium",
         ontology=ontology,
         clinical_safety_alert=safety_alert,
     )
