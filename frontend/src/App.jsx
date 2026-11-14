@@ -245,10 +245,32 @@ export default function App() {
     try {
       let data;
       if (testEndpoint === 'gesture') {
-        data = await api.predictGesture([
-          { x: 0.5, y: 0.6, z: -0.04 },
-          { x: 0.52, y: 0.58, z: -0.03 },
-        ]);
+        // 21 canonical landmarks for ISL "PAIN" sign — fist with extended index finger
+        // Landmark layout: wrist(0), thumb(1-4), index(5-8), middle(9-12), ring(13-16), pinky(17-20)
+        const PAIN_LANDMARKS = [
+          { x: 0.00, y: 0.00, z: 0.00 },   // 0  WRIST
+          { x: -0.14, y: 0.05, z: 0.00 },  // 1  THUMB_CMC
+          { x: -0.23, y: 0.13, z: 0.00 },  // 2  THUMB_MCP
+          { x: -0.27, y: 0.21, z: 0.00 },  // 3  THUMB_IP
+          { x: -0.29, y: 0.30, z: 0.01 },  // 4  THUMB_TIP
+          { x: 0.05, y: 0.20, z: 0.00 },   // 5  INDEX_MCP
+          { x: 0.05, y: 0.31, z: -0.01 },  // 6  INDEX_PIP
+          { x: 0.05, y: 0.40, z: -0.02 },  // 7  INDEX_DIP
+          { x: 0.05, y: 0.49, z: -0.02 },  // 8  INDEX_TIP  ← extended
+          { x: 0.00, y: 0.22, z: 0.00 },   // 9  MIDDLE_MCP
+          { x: 0.01, y: 0.24, z: 0.01 },   // 10 MIDDLE_PIP (curled)
+          { x: 0.02, y: 0.20, z: 0.02 },   // 11 MIDDLE_DIP
+          { x: 0.02, y: 0.17, z: 0.03 },   // 12 MIDDLE_TIP
+          { x: -0.05, y: 0.20, z: 0.00 },  // 13 RING_MCP
+          { x: -0.04, y: 0.22, z: 0.01 },  // 14 RING_PIP
+          { x: -0.03, y: 0.19, z: 0.02 },  // 15 RING_DIP
+          { x: -0.03, y: 0.16, z: 0.03 },  // 16 RING_TIP
+          { x: -0.10, y: 0.17, z: 0.00 },  // 17 PINKY_MCP
+          { x: -0.09, y: 0.19, z: 0.01 },  // 18 PINKY_PIP
+          { x: -0.09, y: 0.17, z: 0.02 },  // 19 PINKY_DIP
+          { x: -0.09, y: 0.14, z: 0.03 },  // 20 PINKY_TIP
+        ];
+        data = await api.predictGesture(PAIN_LANDMARKS);
       } else if (testEndpoint === 'vocabulary') {
         data = await api.getVocabulary();
       } else if (testEndpoint === 'translate') {
