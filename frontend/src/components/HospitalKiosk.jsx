@@ -18,10 +18,11 @@ import LiveCameraTracker from './LiveCameraTracker';
 
 /**
  * HospitalKiosk
- * Phase 2: Dual-Panel Clinical Command Center
- * - Dark glassmorphism theme with teal (patient) and amber (doctor) accents
- * - Neural bridge animated divider between panels
- * - ESI Triage LED strip across the top
+ * Phase 1: Dual-Screen Hospital Kiosk Component
+ * - Golden Cream Frosted Glassmorphism Architecture
+ * - Left: Patient Station (ISL Gesture Input, Hand Placement Ghost, Dynamic Triage Bar, Grammar Tokens, Breath AI)
+ * - Right: Doctor/Staff Station (Bilingual Statement, Quick Clinical Chips, Dynamic Audio EQ, 3D Avatar Sign Sequencer)
+ * - Center: Golden-Teal Neural Bridge Divider with Bidirectional Translation Flow
  */
 export default function HospitalKiosk({
   currentSign,
@@ -84,15 +85,15 @@ export default function HospitalKiosk({
   };
 
   // Compute dynamic clinical triage urgency based on tokens and cough
-  const isCriticalTriage = accumulatedTokens.some((t) =>
-    ['CHEST_PAIN', 'BLEEDING', 'BREATHING'].includes(t)
-  ) || coughResult?.triage_urgency?.includes('1');
+  const isCriticalTriage =
+    accumulatedTokens.some((t) => ['CHEST_PAIN', 'BLEEDING', 'BREATHING'].includes(t)) ||
+    coughResult?.triage_urgency?.includes('1');
 
   const isUrgentTriage = accumulatedTokens.some((t) =>
     ['PAIN', 'FEVER', 'STOMACH', 'DIZZY'].includes(t)
   );
 
-  const triageColor = isCriticalTriage ? '#DC2626' : isUrgentTriage ? '#F59E0B' : '#10B981';
+  const triageColor = isCriticalTriage ? '#DC2626' : isUrgentTriage ? '#B45309' : '#0F766E';
   const triageLabel = isCriticalTriage
     ? 'ESI-1 · IMMEDIATE CRITICAL'
     : isUrgentTriage
@@ -100,7 +101,7 @@ export default function HospitalKiosk({
     : 'ESI-4 · ROUTINE OPD';
 
   // SVG arc helpers for confidence display
-  const confidenceValue = currentSign ? 0.85 : 0;
+  const confidenceValue = currentSign ? 0.88 : 0;
   const arcRadius = 36;
   const arcCircumference = 2 * Math.PI * arcRadius;
   const arcOffset = arcCircumference * (1 - confidenceValue);
@@ -108,17 +109,18 @@ export default function HospitalKiosk({
   return (
     <div
       style={{
-        background: 'linear-gradient(135deg, #060D1A 0%, #0A1628 100%)',
-        borderRadius: '20px',
-        border: '1px solid rgba(20, 184, 166, 0.15)',
+        background: 'rgba(255, 255, 255, 0.72)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        borderRadius: '24px',
+        border: '1px solid rgba(255, 255, 255, 0.9)',
         padding: '0',
         display: 'flex',
         flexDirection: 'column',
-        gap: '0',
-        color: '#E2E8F0',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
+        color: '#1C1917',
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         overflow: 'hidden',
-        boxShadow: '0 32px 64px -16px rgba(0,0,0,0.6), 0 0 0 1px rgba(20,184,166,0.08)',
+        boxShadow: '0 25px 60px -15px rgba(180, 83, 9, 0.08), 0 0 1px 1px rgba(217, 180, 130, 0.25)',
       }}
     >
       {/* Dynamic Keyframe Animations CSS */}
@@ -131,105 +133,92 @@ export default function HospitalKiosk({
         @keyframes eqDance2 { 0% { height: 16px; } 50% { height: 6px; } 100% { height: 22px; } }
         @keyframes eqDance3 { 0% { height: 8px; } 50% { height: 24px; } 100% { height: 12px; } }
         @keyframes bridgePulse {
-          0%, 100% { opacity: 0.35; transform: scale(0.96); }
+          0%, 100% { opacity: 0.5; transform: scale(0.96); }
           50% { opacity: 1; transform: scale(1.04); }
         }
-        @keyframes rippleSonar {
-          0% { transform: scale(0.95); opacity: 0.8; }
-          100% { transform: scale(1.4); opacity: 0; }
-        }
         @keyframes triagePulse {
-          0%, 100% { opacity: 0.7; box-shadow: 0 0 8px currentColor; }
-          50% { opacity: 1; box-shadow: 0 0 24px currentColor; }
+          0%, 100% { opacity: 0.8; box-shadow: 0 0 8px currentColor; }
+          50% { opacity: 1; box-shadow: 0 0 18px currentColor; }
         }
         @keyframes blurIn {
-          0% { filter: blur(12px); opacity: 0; transform: scale(0.92); }
+          0% { filter: blur(8px); opacity: 0; transform: scale(0.94); }
           100% { filter: blur(0px); opacity: 1; transform: scale(1); }
         }
         @keyframes dotFlowDown {
-          0% { transform: translateY(-60px); opacity: 0; }
+          0% { transform: translateY(-50px); opacity: 0; }
           20% { opacity: 1; }
           80% { opacity: 1; }
-          100% { transform: translateY(60px); opacity: 0; }
+          100% { transform: translateY(50px); opacity: 0; }
         }
         @keyframes dotFlowUp {
-          0% { transform: translateY(60px); opacity: 0; }
+          0% { transform: translateY(50px); opacity: 0; }
           20% { opacity: 1; }
           80% { opacity: 1; }
-          100% { transform: translateY(-60px); opacity: 0; }
+          100% { transform: translateY(-50px); opacity: 0; }
         }
         @keyframes pulseBeacon {
           0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.4; transform: scale(1.5); }
+          50% { opacity: 0.4; transform: scale(1.4); }
         }
-        @keyframes synthPulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(15,118,110,0.4); }
-          50% { box-shadow: 0 0 0 10px rgba(15,118,110,0); }
-        }
-        .btn-shimmer {
-          background: linear-gradient(90deg, #0F766E 0%, #0D9488 50%, #0F766E 100%);
+        .btn-shimmer-gold {
+          background: linear-gradient(90deg, #B45309 0%, #F59E0B 50%, #B45309 100%);
           background-size: 200% auto;
           animation: shimmerGlow 3s linear infinite;
         }
         .kiosk-quick-prompt-btn:hover {
-          border-color: rgba(245,158,11,0.6) !important;
-          background: rgba(180,83,9,0.15) !important;
+          border-color: rgba(180, 83, 9, 0.45) !important;
+          background: rgba(254, 243, 199, 0.75) !important;
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(245,158,11,0.15);
-        }
-        .kiosk-gloss-chip:hover {
-          box-shadow: 0 0 12px rgba(245,158,11,0.4) !important;
+          box-shadow: 0 4px 12px rgba(180, 83, 9, 0.1);
         }
       `}</style>
 
-      {/* ============================================================== */}
-      {/* ESI TRIAGE LED STRIP (top animated bar)                        */}
-      {/* ============================================================== */}
+      {/* ESI TRIAGE LED STRIP */}
       <div
         style={{
-          height: '6px',
+          height: '5px',
           background: `linear-gradient(90deg, transparent 0%, ${triageColor} 30%, ${triageColor} 70%, transparent 100%)`,
           animation: 'triagePulse 2s ease-in-out infinite',
           color: triageColor,
         }}
       />
 
-      {/* Top Header */}
+      {/* Top Header — Frosted Golden Cream */}
       <div
         style={{
-          padding: '16px 28px 14px',
-          borderBottom: '1px solid rgba(20,184,166,0.1)',
+          padding: '16px 28px',
+          borderBottom: '1px solid rgba(217, 180, 130, 0.35)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '12px',
-          background: 'rgba(6,13,26,0.6)',
+          background: 'rgba(255, 255, 255, 0.55)',
           backdropFilter: 'blur(12px)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div
             style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #0F766E, #0D9488)',
+              width: '42px',
+              height: '42px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#FFF',
-              boxShadow: '0 4px 16px rgba(15,118,110,0.4)',
+              boxShadow: '0 4px 14px rgba(15, 118, 110, 0.25)',
             }}
           >
-            <HeartPulse size={20} />
+            <HeartPulse size={22} />
           </div>
           <div>
-            <h2 style={{ fontSize: '17px', fontWeight: '800', margin: 0, color: '#E2E8F0', letterSpacing: '-0.3px' }}>
-              Civil Hospital AI Kiosk · Dual-Station Clinical Console
+            <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0, color: '#1C1917', letterSpacing: '-0.3px' }}>
+              Hospital Clinical Kiosk · Dual-Station Console
             </h2>
-            <p style={{ fontSize: '11px', color: '#64748B', margin: '2px 0 0' }}>
-              Zero-Barrier Two-Way Accessibility · MediaPipe ISL + Gemini 1.5 Medical Bridge
+            <p style={{ fontSize: '12px', color: '#78716C', margin: '2px 0 0' }}>
+              Zero-Barrier Two-Way Accessibility · MediaPipe ISL + Gemini 1.5 Medical Grammar
             </p>
           </div>
         </div>
@@ -243,11 +232,11 @@ export default function HospitalKiosk({
             padding: '7px 16px',
             borderRadius: '999px',
             border: `1px solid ${triageColor}44`,
-            background: `${triageColor}11`,
+            background: `${triageColor}14`,
             fontSize: '12px',
             fontWeight: '800',
             color: triageColor,
-            letterSpacing: '0.5px',
+            letterSpacing: '0.4px',
           }}
         >
           <span
@@ -270,25 +259,26 @@ export default function HospitalKiosk({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1fr) 56px minmax(0, 1fr)',
+          gridTemplateColumns: 'minmax(0, 1fr) 52px minmax(0, 1fr)',
           alignItems: 'stretch',
-          padding: '20px',
-          gap: '12px',
+          padding: '22px',
+          gap: '14px',
         }}
       >
         {/* ============================================================ */}
-        {/* LEFT: PATIENT STATION (teal glassmorphism)                   */}
+        {/* LEFT: PATIENT STATION (teal frosted glassmorphism)           */}
         {/* ============================================================ */}
         <div
           style={{
-            background: 'rgba(15, 118, 110, 0.08)',
-            border: '1px solid rgba(20, 184, 166, 0.25)',
+            background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.85) 0%, rgba(240, 253, 250, 0.65) 100%)',
+            border: '1.5px solid rgba(15, 118, 110, 0.22)',
             backdropFilter: 'blur(16px)',
-            borderRadius: '20px',
-            padding: '22px',
+            borderRadius: '22px',
+            padding: '24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px',
+            gap: '18px',
+            boxShadow: '0 8px 25px rgba(15, 118, 110, 0.05)',
           }}
         >
           {/* Patient Station Header */}
@@ -298,11 +288,11 @@ export default function HospitalKiosk({
                 fontSize: '13px',
                 textTransform: 'uppercase',
                 fontWeight: '800',
-                color: '#2DD4BF',
+                color: '#0F766E',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                letterSpacing: '1px',
+                letterSpacing: '0.5px',
               }}
             >
               <span
@@ -310,7 +300,7 @@ export default function HospitalKiosk({
                   width: '8px',
                   height: '8px',
                   borderRadius: '50%',
-                  backgroundColor: '#2DD4BF',
+                  backgroundColor: '#0F766E',
                   animation: 'pulseBeacon 2s ease-in-out infinite',
                   display: 'inline-block',
                 }}
@@ -319,19 +309,19 @@ export default function HospitalKiosk({
             </span>
             <span
               style={{
-                fontSize: '10px',
-                padding: '3px 8px',
-                borderRadius: '6px',
-                background: 'rgba(20,184,166,0.1)',
-                color: '#2DD4BF',
-                border: '1px solid rgba(20,184,166,0.3)',
+                fontSize: '11px',
+                padding: '4px 10px',
+                borderRadius: '8px',
+                background: 'rgba(15, 118, 110, 0.1)',
+                color: '#0F766E',
+                border: '1px solid rgba(15, 118, 110, 0.25)',
                 fontWeight: '700',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px',
               }}
             >
-              <Radio size={11} /> 60 FPS
+              <Radio size={12} /> 60 FPS
             </span>
           </div>
 
@@ -342,26 +332,26 @@ export default function HospitalKiosk({
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: '16px',
-              padding: '16px',
-              borderRadius: '14px',
-              background: 'rgba(6,13,26,0.5)',
-              border: '1px solid rgba(20,184,166,0.15)',
+              padding: '18px 20px',
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.75)',
+              border: '1px solid rgba(15, 118, 110, 0.18)',
+              boxShadow: '0 4px 14px rgba(15, 118, 110, 0.04)',
             }}
           >
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '11px', color: '#64748B', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <div style={{ fontSize: '11px', color: '#78716C', fontWeight: '700', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Detected Sign
               </div>
               <div
                 key={currentSign}
                 style={{
-                  fontSize: '56px',
+                  fontSize: '54px',
                   fontWeight: '900',
-                  color: '#2DD4BF',
-                  lineHeight: 1,
-                  animation: currentSign ? 'blurIn 0.4s ease-out forwards' : 'none',
-                  textShadow: '0 0 32px rgba(45,212,191,0.4)',
-                  letterSpacing: '-2px',
+                  color: '#0F766E',
+                  lineHeight: 1.1,
+                  animation: currentSign ? 'blurIn 0.35s ease-out forwards' : 'none',
+                  letterSpacing: '-1.5px',
                   minHeight: '60px',
                 }}
               >
@@ -370,23 +360,27 @@ export default function HospitalKiosk({
             </div>
 
             {/* Confidence Arc */}
-            <div style={{ position: 'relative', width: '90px', height: '90px', flexShrink: 0 }}>
-              <svg width="90" height="90" style={{ transform: 'rotate(-90deg)' }}>
+            <div style={{ position: 'relative', width: '84px', height: '84px', flexShrink: 0 }}>
+              <svg width="84" height="84" style={{ transform: 'rotate(-90deg)' }}>
                 <circle
-                  cx="45" cy="45" r={arcRadius}
+                  cx="42"
+                  cy="42"
+                  r={arcRadius}
                   fill="none"
-                  stroke="rgba(20,184,166,0.1)"
+                  stroke="rgba(15, 118, 110, 0.12)"
                   strokeWidth="6"
                 />
                 <circle
-                  cx="45" cy="45" r={arcRadius}
+                  cx="42"
+                  cy="42"
+                  r={arcRadius}
                   fill="none"
-                  stroke="#2DD4BF"
+                  stroke="#0F766E"
                   strokeWidth="6"
                   strokeLinecap="round"
                   strokeDasharray={arcCircumference}
                   strokeDashoffset={arcOffset}
-                  style={{ transition: 'stroke-dashoffset 0.6s ease', filter: 'drop-shadow(0 0 6px #2DD4BF)' }}
+                  style={{ transition: 'stroke-dashoffset 0.6s ease' }}
                 />
               </svg>
               <div
@@ -399,10 +393,10 @@ export default function HospitalKiosk({
                   justifyContent: 'center',
                 }}
               >
-                <span style={{ fontSize: '16px', fontWeight: '800', color: '#2DD4BF' }}>
+                <span style={{ fontSize: '16px', fontWeight: '900', color: '#0F766E' }}>
                   {Math.round(confidenceValue * 100)}%
                 </span>
-                <span style={{ fontSize: '9px', color: '#64748B', fontWeight: '600' }}>CONF</span>
+                <span style={{ fontSize: '9px', color: '#78716C', fontWeight: '700' }}>CONF</span>
               </div>
             </div>
           </div>
@@ -421,25 +415,25 @@ export default function HospitalKiosk({
           {/* Hand Guidance */}
           <div
             style={{
-              padding: '8px 12px',
-              borderRadius: '8px',
-              background: 'rgba(6,13,26,0.4)',
-              border: '1px dashed rgba(20,184,166,0.2)',
+              padding: '10px 14px',
+              borderRadius: '10px',
+              background: 'rgba(255, 255, 255, 0.65)',
+              border: '1px dashed rgba(15, 118, 110, 0.3)',
               fontSize: '11px',
-              color: '#64748B',
+              color: '#57534E',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
             }}
           >
-            <span>🖐️ <strong style={{ color: '#94A3B8' }}>Guidance:</strong> Keep hand in center viewfinder. 21 3D joints tracked live.</span>
-            <span style={{ color: '#2DD4BF', fontWeight: '700' }}>Latency: 28ms</span>
+            <span>🖐️ <strong style={{ color: '#1C1917' }}>Guidance:</strong> Keep hand in center viewfinder. 21 3D joints tracked live.</span>
+            <span style={{ color: '#0F766E', fontWeight: '800' }}>Latency: 28ms</span>
           </div>
 
           {/* Grammar-Aware ISL Token Assembly */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <p style={{ fontSize: '12px', fontWeight: '700', color: '#94A3B8', margin: 0 }}>
+              <p style={{ fontSize: '12px', fontWeight: '800', color: '#57534E', margin: 0 }}>
                 Accumulated ISL Tokens ({accumulatedTokens.length}):
               </p>
               <div style={{ display: 'flex', gap: '6px' }}>
@@ -451,13 +445,14 @@ export default function HospitalKiosk({
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
-                      padding: '4px 8px',
+                      padding: '4px 10px',
                       borderRadius: '6px',
-                      background: 'rgba(100,116,139,0.1)',
-                      border: '1px solid rgba(100,116,139,0.2)',
+                      background: 'rgba(255, 255, 255, 0.7)',
+                      border: '1px solid rgba(217, 180, 130, 0.5)',
                       fontSize: '11px',
-                      color: '#94A3B8',
+                      color: '#78716C',
                       cursor: 'pointer',
+                      fontWeight: '700',
                     }}
                     title="Remove last token"
                   >
@@ -469,13 +464,14 @@ export default function HospitalKiosk({
                     type="button"
                     onClick={() => setAccumulatedTokens([])}
                     style={{
-                      padding: '4px 8px',
+                      padding: '4px 10px',
                       borderRadius: '6px',
                       background: 'transparent',
                       border: 'none',
                       fontSize: '11px',
-                      color: '#475569',
+                      color: '#A8A29E',
                       cursor: 'pointer',
+                      fontWeight: '700',
                     }}
                   >
                     Clear All
@@ -484,7 +480,7 @@ export default function HospitalKiosk({
               </div>
             </div>
 
-            {/* Token Chips — amber glow glassmorphism pills */}
+            {/* Token Chips — Frosted Glass Pills */}
             <div
               style={{
                 display: 'flex',
@@ -492,23 +488,31 @@ export default function HospitalKiosk({
                 gap: '8px',
                 minHeight: '52px',
                 padding: '12px',
-                borderRadius: '12px',
-                background: 'rgba(6,13,26,0.5)',
-                border: '1px solid rgba(20,184,166,0.12)',
+                borderRadius: '14px',
+                background: 'rgba(255, 255, 255, 0.7)',
+                border: '1px solid rgba(217, 180, 130, 0.4)',
                 alignItems: 'center',
               }}
             >
               {accumulatedTokens.length === 0 ? (
-                <span style={{ fontSize: '12px', color: '#475569', fontStyle: 'italic' }}>
+                <span style={{ fontSize: '12px', color: '#A8A29E', fontStyle: 'italic' }}>
                   No gestures queued. Show hand signs or tap quick shortcuts below...
                 </span>
               ) : (
                 accumulatedTokens.map((t, idx) => {
                   const isSubject = ['I', 'YOU', 'HE', 'SHE'].includes(t);
                   const isPredicate = ['PAIN', 'HURT', 'FEVER', 'HELP', 'BLEEDING'].includes(t);
-                  const bgColor = isPredicate ? 'rgba(239,68,68,0.15)' : isSubject ? 'rgba(245,158,11,0.15)' : 'rgba(20,184,166,0.12)';
-                  const borderColor = isPredicate ? 'rgba(239,68,68,0.4)' : isSubject ? 'rgba(245,158,11,0.4)' : 'rgba(20,184,166,0.3)';
-                  const textColor = isPredicate ? '#FCA5A5' : isSubject ? '#FCD34D' : '#2DD4BF';
+                  const bgColor = isPredicate
+                    ? 'rgba(220, 38, 38, 0.12)'
+                    : isSubject
+                    ? 'rgba(245, 158, 11, 0.16)'
+                    : 'rgba(15, 118, 110, 0.12)';
+                  const borderColor = isPredicate
+                    ? 'rgba(220, 38, 38, 0.35)'
+                    : isSubject
+                    ? 'rgba(217, 119, 6, 0.35)'
+                    : 'rgba(15, 118, 110, 0.3)';
+                  const textColor = isPredicate ? '#B91C1C' : isSubject ? '#92400E' : '#0F766E';
                   return (
                     <span
                       key={idx}
@@ -516,17 +520,16 @@ export default function HospitalKiosk({
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '6px',
-                        padding: '5px 11px',
-                        borderRadius: '8px',
+                        padding: '6px 12px',
+                        borderRadius: '10px',
                         background: bgColor,
                         color: textColor,
                         border: `1px solid ${borderColor}`,
-                        fontWeight: '700',
+                        fontWeight: '800',
                         fontSize: '12px',
-                        boxShadow: `0 0 8px ${borderColor}`,
                       }}
                     >
-                      <span style={{ fontSize: '10px', opacity: 0.6 }}>#{idx + 1}</span>
+                      <span style={{ fontSize: '10px', opacity: 0.65 }}>#{idx + 1}</span>
                       <span>{t}</span>
                       <button
                         type="button"
@@ -538,7 +541,7 @@ export default function HospitalKiosk({
                           cursor: 'pointer',
                           fontSize: '12px',
                           padding: 0,
-                          marginLeft: '2px',
+                          marginLeft: '3px',
                           opacity: 0.7,
                         }}
                       >
@@ -554,12 +557,13 @@ export default function HospitalKiosk({
                 type="button"
                 onClick={() => setAccumulatedTokens([...accumulatedTokens, 'WATER'])}
                 style={{
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  background: 'rgba(20,184,166,0.05)',
-                  color: '#64748B',
+                  padding: '5px 12px',
+                  borderRadius: '8px',
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  color: '#78716C',
                   fontSize: '11px',
-                  border: '1px dashed rgba(20,184,166,0.2)',
+                  fontWeight: '700',
+                  border: '1px dashed rgba(217, 180, 130, 0.6)',
                   cursor: 'pointer',
                 }}
               >
@@ -569,12 +573,13 @@ export default function HospitalKiosk({
                 type="button"
                 onClick={() => setAccumulatedTokens([...accumulatedTokens, 'FEVER'])}
                 style={{
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  background: 'rgba(20,184,166,0.05)',
-                  color: '#64748B',
+                  padding: '5px 12px',
+                  borderRadius: '8px',
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  color: '#78716C',
                   fontSize: '11px',
-                  border: '1px dashed rgba(20,184,166,0.2)',
+                  fontWeight: '700',
+                  border: '1px dashed rgba(217, 180, 130, 0.6)',
                   cursor: 'pointer',
                 }}
               >
@@ -583,27 +588,28 @@ export default function HospitalKiosk({
             </div>
           </div>
 
-          {/* Gemini Grammar Bridge — large pulsing CTA */}
+          {/* Gemini Grammar Bridge — large golden gradient CTA */}
           <button
             type="button"
             onClick={handleSynthesizeTokens}
             disabled={isTranslating || accumulatedTokens.length === 0}
-            className={accumulatedTokens.length > 0 ? 'btn-shimmer' : ''}
+            className={accumulatedTokens.length > 0 ? 'btn-shimmer-gold' : ''}
             style={{
-              padding: '15px 20px',
-              borderRadius: '14px',
-              background: accumulatedTokens.length === 0 ? 'rgba(30,41,59,0.6)' : 'linear-gradient(135deg, #0F766E, #0D9488)',
-              color: accumulatedTokens.length === 0 ? '#475569' : '#FFFFFF',
+              padding: '15px 22px',
+              borderRadius: '16px',
+              background: accumulatedTokens.length === 0
+                ? 'rgba(231, 229, 228, 0.6)'
+                : 'linear-gradient(135deg, #B45309 0%, #D97706 100%)',
+              color: accumulatedTokens.length === 0 ? '#A8A29E' : '#FFFFFF',
               fontWeight: '800',
               fontSize: '15px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '10px',
-              border: accumulatedTokens.length === 0 ? '1px solid rgba(71,85,105,0.3)' : '1px solid rgba(20,184,166,0.4)',
+              border: 'none',
               cursor: accumulatedTokens.length === 0 ? 'not-allowed' : 'pointer',
-              boxShadow: accumulatedTokens.length > 0 ? '0 6px 24px rgba(15,118,110,0.4)' : 'none',
-              animation: accumulatedTokens.length > 0 ? 'synthPulse 2s infinite' : 'none',
+              boxShadow: accumulatedTokens.length > 0 ? '0 8px 24px rgba(180, 83, 9, 0.3)' : 'none',
               transition: 'all 0.2s',
             }}
           >
@@ -615,19 +621,19 @@ export default function HospitalKiosk({
           <div
             style={{
               padding: '16px',
-              borderRadius: '14px',
-              background: 'rgba(190,24,93,0.08)',
-              border: '1px solid rgba(244,114,182,0.2)',
+              borderRadius: '16px',
+              background: 'linear-gradient(135deg, rgba(253, 242, 248, 0.8) 0%, rgba(255, 255, 255, 0.75) 100%)',
+              border: '1.5px solid rgba(244, 114, 182, 0.3)',
               display: 'flex',
               flexDirection: 'column',
               gap: '10px',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', fontWeight: '700', color: '#F472B6', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '12px', fontWeight: '800', color: '#BE185D', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Mic size={14} /> Acoustic Respiratory Biomarker AI
               </span>
-              <span style={{ fontSize: '10px', color: '#9D174D', fontWeight: '600', background: 'rgba(190,24,93,0.1)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(244,114,182,0.2)' }}>
+              <span style={{ fontSize: '10px', color: '#BE185D', fontWeight: '800', background: 'rgba(244, 114, 182, 0.2)', padding: '3px 8px', borderRadius: '6px' }}>
                 Asthma / Wheeze Detector
               </span>
             </div>
@@ -637,18 +643,19 @@ export default function HospitalKiosk({
               onClick={() => handleAnalyzeCough('WHEEZE_ASTHMA')}
               disabled={isAnalyzingCough}
               style={{
-                padding: '10px 16px',
-                borderRadius: '10px',
-                background: 'rgba(190,24,93,0.7)',
+                padding: '11px 16px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #BE185D 0%, #DB2777 100%)',
                 color: '#FFF',
-                border: '1px solid rgba(244,114,182,0.3)',
-                fontWeight: '700',
+                border: 'none',
+                fontWeight: '800',
                 fontSize: '12px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
                 cursor: isAnalyzingCough ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 14px rgba(190, 24, 93, 0.25)',
               }}
             >
               <Activity size={15} className={isAnalyzingCough ? 'animate-spin' : ''} />
@@ -659,20 +666,20 @@ export default function HospitalKiosk({
               <div
                 style={{
                   padding: '12px',
-                  borderRadius: '10px',
-                  background: 'rgba(6,13,26,0.6)',
-                  border: '1px solid rgba(244,114,182,0.25)',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.85)',
+                  border: '1px solid rgba(244, 114, 182, 0.35)',
                   fontSize: '12px',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '4px',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', color: '#F472B6' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '800', color: '#BE185D' }}>
                   <span>Biomarker: {coughResult.biomarker_detected}</span>
-                  <span style={{ color: '#FB7185' }}>ICD-10: {coughResult.icd10_code}</span>
+                  <span style={{ color: '#E11D48' }}>ICD-10: {coughResult.icd10_code}</span>
                 </div>
-                <div style={{ color: '#94A3B8', fontStyle: 'italic' }}>
+                <div style={{ color: '#57534E', fontStyle: 'italic' }}>
                   {coughResult.actionable_clinical_guidance}
                 </div>
               </div>
@@ -691,7 +698,7 @@ export default function HospitalKiosk({
             justifyContent: 'center',
             gap: '0',
             position: 'relative',
-            padding: '0 4px',
+            padding: '0 2px',
           }}
         >
           {/* Top line segment */}
@@ -699,30 +706,29 @@ export default function HospitalKiosk({
             style={{
               width: '2px',
               flex: 1,
-              background: 'linear-gradient(to bottom, transparent, rgba(20,184,166,0.3) 30%, rgba(245,158,11,0.3) 70%, transparent)',
+              background: 'linear-gradient(to bottom, transparent, rgba(15, 118, 110, 0.3) 30%, rgba(180, 83, 9, 0.3) 70%, transparent)',
               position: 'relative',
               overflow: 'hidden',
             }}
           >
             {/* Moving dots */}
-            <div style={{ position: 'absolute', left: '-3px', width: '8px', height: '8px', borderRadius: '50%', background: '#2DD4BF', animation: 'dotFlowDown 2.5s ease-in-out infinite', boxShadow: '0 0 8px #2DD4BF' }} />
-            <div style={{ position: 'absolute', left: '-3px', width: '6px', height: '6px', borderRadius: '50%', background: '#F59E0B', animation: 'dotFlowUp 3s ease-in-out infinite 0.8s', boxShadow: '0 0 6px #F59E0B' }} />
-            <div style={{ position: 'absolute', left: '-3px', width: '5px', height: '5px', borderRadius: '50%', background: '#2DD4BF', animation: 'dotFlowDown 3.5s ease-in-out infinite 1.6s', boxShadow: '0 0 5px #2DD4BF' }} />
+            <div style={{ position: 'absolute', left: '-3px', width: '8px', height: '8px', borderRadius: '50%', background: '#0F766E', animation: 'dotFlowDown 2.5s ease-in-out infinite', boxShadow: '0 0 8px #0F766E' }} />
+            <div style={{ position: 'absolute', left: '-3px', width: '6px', height: '6px', borderRadius: '50%', background: '#B45309', animation: 'dotFlowUp 3s ease-in-out infinite 0.8s', boxShadow: '0 0 6px #B45309' }} />
           </div>
 
           {/* Center icon */}
           <div
             style={{
-              width: '42px',
-              height: '42px',
+              width: '40px',
+              height: '40px',
               borderRadius: '50%',
-              background: 'rgba(6,13,26,0.9)',
-              border: '2px solid rgba(20,184,166,0.5)',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(254, 243, 199, 0.85) 100%)',
+              border: '2px solid rgba(180, 83, 9, 0.4)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#2DD4BF',
-              boxShadow: '0 0 20px rgba(20,184,166,0.3), 0 0 40px rgba(20,184,166,0.1)',
+              color: '#B45309',
+              boxShadow: '0 4px 16px rgba(180, 83, 9, 0.15)',
               animation: 'bridgePulse 2.5s infinite',
               flexShrink: 0,
             }}
@@ -731,7 +737,7 @@ export default function HospitalKiosk({
             <ArrowLeftRight size={16} />
           </div>
 
-          <span style={{ fontSize: '9px', textTransform: 'uppercase', color: '#334155', fontWeight: '800', writingMode: 'vertical-rl', letterSpacing: '2px', margin: '8px 0' }}>
+          <span style={{ fontSize: '9px', textTransform: 'uppercase', color: '#A8A29E', fontWeight: '800', writingMode: 'vertical-rl', letterSpacing: '2px', margin: '8px 0' }}>
             BRIDGE
           </span>
 
@@ -740,29 +746,30 @@ export default function HospitalKiosk({
             style={{
               width: '2px',
               flex: 1,
-              background: 'linear-gradient(to bottom, transparent, rgba(20,184,166,0.3) 30%, rgba(245,158,11,0.3) 70%, transparent)',
+              background: 'linear-gradient(to bottom, transparent, rgba(180, 83, 9, 0.3) 30%, rgba(15, 118, 110, 0.3) 70%, transparent)',
               position: 'relative',
               overflow: 'hidden',
             }}
           >
-            <div style={{ position: 'absolute', left: '-3px', width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B', animation: 'dotFlowDown 2.8s ease-in-out infinite 0.4s', boxShadow: '0 0 8px #F59E0B' }} />
-            <div style={{ position: 'absolute', left: '-3px', width: '6px', height: '6px', borderRadius: '50%', background: '#2DD4BF', animation: 'dotFlowUp 3.2s ease-in-out infinite 1.2s', boxShadow: '0 0 6px #2DD4BF' }} />
+            <div style={{ position: 'absolute', left: '-3px', width: '8px', height: '8px', borderRadius: '50%', background: '#B45309', animation: 'dotFlowDown 2.8s ease-in-out infinite 0.4s', boxShadow: '0 0 8px #B45309' }} />
+            <div style={{ position: 'absolute', left: '-3px', width: '6px', height: '6px', borderRadius: '50%', background: '#0F766E', animation: 'dotFlowUp 3.2s ease-in-out infinite 1.2s', boxShadow: '0 0 6px #0F766E' }} />
           </div>
         </div>
 
         {/* ============================================================ */}
-        {/* RIGHT: DOCTOR / STAFF STATION (amber glassmorphism)          */}
+        {/* RIGHT: DOCTOR / STAFF STATION (golden amber glassmorphism)   */}
         {/* ============================================================ */}
         <div
           style={{
-            background: 'rgba(180, 83, 9, 0.06)',
-            border: '1px solid rgba(245, 158, 11, 0.2)',
+            background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.85) 0%, rgba(254, 243, 199, 0.55) 100%)',
+            border: '1.5px solid rgba(217, 119, 6, 0.22)',
             backdropFilter: 'blur(16px)',
-            borderRadius: '20px',
-            padding: '22px',
+            borderRadius: '22px',
+            padding: '24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px',
+            gap: '18px',
+            boxShadow: '0 8px 25px rgba(180, 83, 9, 0.05)',
           }}
         >
           {/* Doctor Station Header */}
@@ -772,11 +779,11 @@ export default function HospitalKiosk({
                 fontSize: '13px',
                 textTransform: 'uppercase',
                 fontWeight: '800',
-                color: '#FCD34D',
+                color: '#B45309',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                letterSpacing: '1px',
+                letterSpacing: '0.5px',
               }}
             >
               <span
@@ -784,7 +791,7 @@ export default function HospitalKiosk({
                   width: '8px',
                   height: '8px',
                   borderRadius: '50%',
-                  backgroundColor: '#F59E0B',
+                  backgroundColor: '#B45309',
                   animation: 'pulseBeacon 2s ease-in-out infinite 0.5s',
                   display: 'inline-block',
                 }}
@@ -793,12 +800,12 @@ export default function HospitalKiosk({
             </span>
             <span
               style={{
-                fontSize: '10px',
-                padding: '3px 8px',
-                borderRadius: '6px',
-                background: 'rgba(245,158,11,0.1)',
-                color: '#FCD34D',
-                border: '1px solid rgba(245,158,11,0.3)',
+                fontSize: '11px',
+                padding: '4px 10px',
+                borderRadius: '8px',
+                background: 'rgba(245, 158, 11, 0.15)',
+                color: '#92400E',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
                 fontWeight: '700',
               }}
             >
@@ -810,30 +817,31 @@ export default function HospitalKiosk({
           <div
             style={{
               padding: '18px',
-              borderRadius: '14px',
-              background: 'rgba(6,13,26,0.5)',
-              border: '1px solid rgba(245,158,11,0.15)',
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.8)',
+              border: '1px solid rgba(217, 180, 130, 0.4)',
               display: 'flex',
               flexDirection: 'column',
               gap: '12px',
+              boxShadow: '0 4px 14px rgba(180, 83, 9, 0.04)',
             }}
           >
             {/* English Synthesized Statement */}
             <div>
-              <span style={{ fontSize: '10px', textTransform: 'uppercase', color: '#64748B', fontWeight: '800', letterSpacing: '0.5px' }}>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', color: '#78716C', fontWeight: '800', letterSpacing: '0.5px' }}>
                 Synthesized Patient Statement (English):
               </span>
-              <p style={{ fontSize: '16px', fontWeight: '700', color: '#E2E8F0', margin: '5px 0 0', lineHeight: 1.4 }}>
+              <p style={{ fontSize: '16px', fontWeight: '700', color: '#1C1917', margin: '5px 0 0', lineHeight: 1.45 }}>
                 &ldquo;{synthesizedText}&rdquo;
               </p>
             </div>
 
-            <div style={{ height: '1px', background: 'rgba(245,158,11,0.1)' }} />
+            <div style={{ height: '1px', background: 'rgba(217, 180, 130, 0.4)' }} />
 
             {/* Regional Translation */}
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <span style={{ fontSize: '10px', textTransform: 'uppercase', color: '#64748B', fontWeight: '800', letterSpacing: '0.5px' }}>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', color: '#78716C', fontWeight: '800', letterSpacing: '0.5px' }}>
                   Regional Medical Translation:
                 </span>
                 <button
@@ -845,36 +853,36 @@ export default function HospitalKiosk({
                     gap: '5px',
                     padding: '5px 12px',
                     borderRadius: '8px',
-                    background: isPlayingAudio ? 'rgba(220,38,38,0.7)' : 'rgba(15,118,110,0.7)',
+                    background: isPlayingAudio ? '#DC2626' : '#B45309',
                     color: '#FFF',
-                    border: `1px solid ${isPlayingAudio ? 'rgba(239,68,68,0.4)' : 'rgba(20,184,166,0.4)'}`,
+                    border: 'none',
                     fontSize: '11px',
-                    fontWeight: '700',
+                    fontWeight: '800',
                     cursor: 'pointer',
                     transition: 'all 0.15s',
+                    boxShadow: '0 2px 8px rgba(180, 83, 9, 0.2)',
                   }}
                 >
-                  <Volume2 size={12} />
+                  <Volume2 size={13} />
                   {isPlayingAudio ? 'Stop Audio' : '🔊 Listen (Edge-TTS)'}
                 </button>
               </div>
 
-              <p style={{ fontSize: '18px', fontWeight: '800', color: '#FCD34D', margin: 0, lineHeight: 1.4, textShadow: '0 0 20px rgba(245,158,11,0.3)' }}>
+              <p style={{ fontSize: '18px', fontWeight: '800', color: '#B45309', margin: 0, lineHeight: 1.45 }}>
                 {translatedResult}
               </p>
 
               {/* Audio EQ Animation */}
               {isPlayingAudio && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '10px' }}>
-                  <span style={{ fontSize: '11px', color: '#2DD4BF', fontWeight: '700', marginRight: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#B45309', fontWeight: '700', marginRight: '6px' }}>
                     Broadcasting Neural Speech:
                   </span>
-                  <span style={{ width: '3px', backgroundColor: '#2DD4BF', borderRadius: '2px', animation: 'eqDance1 0.5s infinite alternate' }} />
-                  <span style={{ width: '3px', backgroundColor: '#2DD4BF', borderRadius: '2px', animation: 'eqDance2 0.7s infinite alternate' }} />
-                  <span style={{ width: '3px', backgroundColor: '#2DD4BF', borderRadius: '2px', animation: 'eqDance3 0.6s infinite alternate' }} />
-                  <span style={{ width: '3px', backgroundColor: '#2DD4BF', borderRadius: '2px', animation: 'eqDance1 0.8s infinite alternate' }} />
-                  <span style={{ width: '3px', backgroundColor: '#2DD4BF', borderRadius: '2px', animation: 'eqDance2 0.5s infinite alternate' }} />
-                  <span style={{ width: '3px', backgroundColor: '#2DD4BF', borderRadius: '2px', animation: 'eqDance3 0.9s infinite alternate' }} />
+                  <span style={{ width: '3px', backgroundColor: '#B45309', borderRadius: '2px', animation: 'eqDance1 0.5s infinite alternate' }} />
+                  <span style={{ width: '3px', backgroundColor: '#B45309', borderRadius: '2px', animation: 'eqDance2 0.7s infinite alternate' }} />
+                  <span style={{ width: '3px', backgroundColor: '#B45309', borderRadius: '2px', animation: 'eqDance3 0.6s infinite alternate' }} />
+                  <span style={{ width: '3px', backgroundColor: '#B45309', borderRadius: '2px', animation: 'eqDance1 0.8s infinite alternate' }} />
+                  <span style={{ width: '3px', backgroundColor: '#B45309', borderRadius: '2px', animation: 'eqDance2 0.5s infinite alternate' }} />
                 </div>
               )}
             </div>
@@ -886,20 +894,20 @@ export default function HospitalKiosk({
                 alignItems: 'center',
                 gap: '6px',
                 fontSize: '11px',
-                color: '#10B981',
+                color: '#15803D',
                 paddingTop: '8px',
-                borderTop: '1px dashed rgba(245,158,11,0.1)',
-                fontWeight: '600',
+                borderTop: '1px dashed rgba(217, 180, 130, 0.4)',
+                fontWeight: '700',
               }}
             >
-              <ShieldCheck size={13} />
+              <ShieldCheck size={14} />
               <span>SHA-256 Digital Tamper-Proof Signature · FHIR v4.0.1 Verified</span>
             </div>
           </div>
 
-          {/* Quick Doctor Response Chips — horizontal scrolling amber glow */}
+          {/* Quick Doctor Response Chips */}
           <div>
-            <span style={{ fontSize: '11px', fontWeight: '700', color: '#94A3B8', marginBottom: '8px', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <span style={{ fontSize: '11px', fontWeight: '800', color: '#78716C', marginBottom: '8px', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               ⚡ 1-Tap Physician Inquiries:
             </span>
             <div
@@ -919,13 +927,13 @@ export default function HospitalKiosk({
                     handleDoctorToGloss();
                   }}
                   style={{
-                    padding: '10px 12px',
-                    borderRadius: '10px',
-                    background: 'rgba(6,13,26,0.6)',
-                    border: '1px solid rgba(245,158,11,0.15)',
-                    color: '#CBD5E1',
-                    fontSize: '11px',
-                    fontWeight: '600',
+                    padding: '11px 13px',
+                    borderRadius: '12px',
+                    background: 'rgba(255, 255, 255, 0.75)',
+                    border: '1px solid rgba(217, 180, 130, 0.4)',
+                    color: '#1C1917',
+                    fontSize: '12px',
+                    fontWeight: '700',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.2s',
@@ -937,7 +945,7 @@ export default function HospitalKiosk({
             </div>
           </div>
 
-          {/* Doctor Input textarea */}
+          {/* Doctor Input Textbox */}
           <div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <input
@@ -949,12 +957,13 @@ export default function HospitalKiosk({
                 style={{
                   flex: 1,
                   padding: '12px 16px',
-                  borderRadius: '10px',
-                  background: 'rgba(6,13,26,0.7)',
-                  border: '1px solid rgba(245,158,11,0.25)',
-                  color: '#E2E8F0',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.85)',
+                  border: '1.5px solid rgba(217, 119, 6, 0.3)',
+                  color: '#1C1917',
                   fontSize: '13px',
                   outline: 'none',
+                  fontWeight: '600',
                 }}
               />
               <button
@@ -962,16 +971,16 @@ export default function HospitalKiosk({
                 onClick={handleDoctorToGloss}
                 style={{
                   padding: '12px 20px',
-                  borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #B45309, #D97706)',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)',
                   color: '#FFF',
-                  fontWeight: '700',
+                  fontWeight: '800',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  border: '1px solid rgba(245,158,11,0.3)',
+                  border: 'none',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 14px rgba(245,158,11,0.25)',
+                  boxShadow: '0 4px 14px rgba(180, 83, 9, 0.25)',
                 }}
               >
                 <Send size={15} /> Send
@@ -983,22 +992,23 @@ export default function HospitalKiosk({
           <div
             style={{
               padding: '18px',
-              borderRadius: '14px',
-              background: 'rgba(6,13,26,0.5)',
-              border: '1px solid rgba(245,158,11,0.15)',
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.75)',
+              border: '1px solid rgba(217, 180, 130, 0.4)',
               display: 'flex',
               flexDirection: 'column',
               gap: '12px',
+              boxShadow: '0 4px 14px rgba(180, 83, 9, 0.04)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
               <div>
-                <span style={{ fontSize: '12px', color: '#FCD34D', fontWeight: '700' }}>
+                <span style={{ fontSize: '12px', color: '#B45309', fontWeight: '800' }}>
                   Two-Way Sign Sequencer (Avatar Clip Playlist):
                 </span>
                 {doctorGrammarGloss && (
-                  <p style={{ fontSize: '11px', color: '#64748B', margin: '2px 0 0' }}>
-                    SOV Grammar: <strong style={{ color: '#F59E0B' }}>{doctorGrammarGloss}</strong>
+                  <p style={{ fontSize: '11px', color: '#78716C', margin: '2px 0 0' }}>
+                    SOV Grammar: <strong style={{ color: '#B45309' }}>{doctorGrammarGloss}</strong>
                   </p>
                 )}
               </div>
@@ -1013,11 +1023,11 @@ export default function HospitalKiosk({
                   gap: '5px',
                   padding: '6px 14px',
                   borderRadius: '8px',
-                  background: isPlayingSequence ? 'rgba(5,150,105,0.7)' : 'rgba(15,118,110,0.7)',
+                  background: isPlayingSequence ? '#15803D' : '#0F766E',
                   color: '#FFF',
-                  border: '1px solid rgba(20,184,166,0.3)',
+                  border: 'none',
                   fontSize: '11px',
-                  fontWeight: '700',
+                  fontWeight: '800',
                   cursor: 'pointer',
                 }}
               >
@@ -1026,7 +1036,7 @@ export default function HospitalKiosk({
               </button>
             </div>
 
-            {/* Gloss Chips — amber glow on active */}
+            {/* Gloss Chips */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {doctorGlosses.map((g, idx) => {
                 const isCurrent = activeClipIndex === idx;
@@ -1034,27 +1044,28 @@ export default function HospitalKiosk({
                   <button
                     key={idx}
                     type="button"
-                    className="kiosk-gloss-chip"
                     onClick={() => setActiveClipIndex(idx)}
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '6px',
-                      padding: '7px 13px',
-                      borderRadius: '8px',
-                      background: isCurrent ? 'rgba(245,158,11,0.2)' : 'rgba(6,13,26,0.6)',
-                      color: isCurrent ? '#FCD34D' : '#94A3B8',
-                      border: `1px solid ${isCurrent ? 'rgba(245,158,11,0.6)' : 'rgba(245,158,11,0.1)'}`,
+                      padding: '7px 14px',
+                      borderRadius: '10px',
+                      background: isCurrent
+                        ? 'linear-gradient(135deg, #FDE68A 0%, #F59E0B 100%)'
+                        : 'rgba(255, 255, 255, 0.85)',
+                      color: isCurrent ? '#000' : '#78716C',
+                      border: `1px solid ${isCurrent ? '#B45309' : 'rgba(217, 180, 130, 0.4)'}`,
                       fontSize: '12px',
-                      fontWeight: '700',
+                      fontWeight: '800',
                       cursor: 'pointer',
                       transition: 'all 0.15s',
-                      transform: isCurrent ? 'scale(1.05)' : 'none',
-                      boxShadow: isCurrent ? '0 0 16px rgba(245,158,11,0.35)' : 'none',
+                      transform: isCurrent ? 'scale(1.04)' : 'none',
+                      boxShadow: isCurrent ? '0 4px 12px rgba(180, 83, 9, 0.25)' : 'none',
                     }}
                   >
                     <span>🎬 {idx + 1}. {g}</span>
-                    {isCurrent && <span style={{ fontSize: '10px', color: '#F59E0B' }}>● Playing</span>}
+                    {isCurrent && <span style={{ fontSize: '10px', color: '#92400E' }}>● Active</span>}
                   </button>
                 );
               })}
@@ -1065,11 +1076,11 @@ export default function HospitalKiosk({
               <div
                 style={{
                   padding: '12px 16px',
-                  borderRadius: '10px',
-                  background: 'rgba(6,13,26,0.7)',
-                  border: '1px dashed rgba(245,158,11,0.3)',
+                  borderRadius: '12px',
+                  background: 'rgba(254, 243, 199, 0.6)',
+                  border: '1px dashed rgba(217, 119, 6, 0.4)',
                   fontSize: '12px',
-                  color: '#FCD34D',
+                  color: '#92400E',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -1077,9 +1088,9 @@ export default function HospitalKiosk({
               >
                 <span>
                   <strong>Avatar Gesture Viewport:</strong> Rendering sign gesture for &ldquo;
-                  <span style={{ color: '#F59E0B', fontWeight: '700' }}>{doctorGlosses[activeClipIndex]}</span>&rdquo;
+                  <span style={{ color: '#B45309', fontWeight: '800' }}>{doctorGlosses[activeClipIndex]}</span>&rdquo;
                 </span>
-                <span style={{ color: '#475569', fontSize: '11px' }}>ISL Dictionary Frame 30/30 · 60 FPS</span>
+                <span style={{ color: '#78716C', fontSize: '11px', fontWeight: '700' }}>ISL Dictionary Frame 30/30 · 60 FPS</span>
               </div>
             )}
           </div>
