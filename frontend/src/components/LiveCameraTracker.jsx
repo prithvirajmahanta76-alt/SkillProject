@@ -376,15 +376,16 @@ export default function LiveCameraTracker({ onSignDetected, activeSign = 'PAIN' 
           position: 'relative',
           width: '100%',
           height: '240px',
-          borderRadius: '12px',
-          backgroundColor: '#050b14',
+          borderRadius: '16px',
+          backgroundColor: '#1C1917',
           overflow: 'hidden',
           border: isLiveMode
-            ? '2px solid var(--accent-green)'
-            : '2px dashed var(--border)',
+            ? '2px solid #059669'
+            : '1px solid rgba(217, 180, 130, 0.45)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          boxShadow: '0 8px 24px rgba(180, 83, 9, 0.08)',
         }}
       >
         {/* Background Live Video */}
@@ -423,16 +424,16 @@ export default function LiveCameraTracker({ onSignDetected, activeSign = 'PAIN' 
             position: 'absolute', top: '12px', left: '12px',
             display: 'flex', alignItems: 'center', gap: '6px',
             padding: '4px 10px', borderRadius: '999px',
-            backgroundColor: 'rgba(15,23,42,0.85)',
-            border: `1px solid ${isLiveMode ? 'var(--accent-green)' : 'var(--accent-yellow)'}`,
+            backgroundColor: 'rgba(28, 25, 23, 0.85)',
+            border: `1px solid ${isLiveMode ? '#10B981' : '#D97706'}`,
             fontSize: '11px', fontWeight: 'bold',
-            color: isLiveMode ? 'var(--accent-green)' : 'var(--accent-yellow)',
+            color: isLiveMode ? '#34D399' : '#FBBF24',
             backdropFilter: 'blur(4px)',
           }}
         >
           <span style={{
             width: '8px', height: '8px', borderRadius: '50%',
-            backgroundColor: isLiveMode ? 'var(--accent-green)' : 'var(--accent-yellow)',
+            backgroundColor: isLiveMode ? '#10B981' : '#D97706',
             animation: 'pulse 1.5s infinite',
           }} />
           {isLiveMode
@@ -445,10 +446,10 @@ export default function LiveCameraTracker({ onSignDetected, activeSign = 'PAIN' 
           style={{
             position: 'absolute', top: '12px', right: '12px',
             padding: '4px 8px', borderRadius: '6px',
-            backgroundColor: 'rgba(15,23,42,0.85)',
-            border: `1px solid ${wsConnected ? 'var(--accent-green)' : 'var(--accent-cyan)'}`,
+            backgroundColor: 'rgba(28, 25, 23, 0.85)',
+            border: `1px solid ${wsConnected ? '#10B981' : '#14B8A6'}`,
             fontSize: '11px',
-            color: wsConnected ? 'var(--accent-green)' : 'var(--accent-cyan)',
+            color: wsConnected ? '#34D399' : '#2DD4BF',
             fontWeight: 'bold',
             display: 'flex', alignItems: 'center', gap: '4px',
           }}
@@ -462,17 +463,17 @@ export default function LiveCameraTracker({ onSignDetected, activeSign = 'PAIN' 
           style={{
             position: 'absolute', bottom: '12px', left: '12px',
             padding: '6px 14px', borderRadius: '8px',
-            backgroundColor: 'rgba(15,23,42,0.9)',
-            border: '1px solid var(--accent-cyan)',
-            fontSize: '13px', color: 'var(--accent-cyan)',
+            backgroundColor: 'rgba(28, 25, 23, 0.9)',
+            border: '1px solid rgba(217, 180, 130, 0.45)',
+            fontSize: '13px', color: '#FDE68A',
             fontWeight: 'bold',
             display: 'flex', alignItems: 'center', gap: '8px',
             boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
           }}
         >
-          <Sparkles size={16} />
+          <Sparkles size={16} color="#D97706" />
           Detected Sign:{' '}
-          <span style={{ color: 'var(--accent-yellow)' }}>{detectedSign}</span>
+          <span style={{ color: '#F59E0B' }}>{detectedSign}</span>
           {' '}({(confidence * 100).toFixed(1)}%)
         </div>
       </div>
@@ -485,13 +486,15 @@ export default function LiveCameraTracker({ onSignDetected, activeSign = 'PAIN' 
           disabled={isCameraStarting}
           style={{
             display: 'flex', alignItems: 'center', gap: '8px',
-            padding: '8px 16px', borderRadius: '8px',
-            backgroundColor: isLiveMode ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)',
-            border: `1px solid ${isLiveMode ? 'var(--accent-red)' : 'var(--accent-green)'}`,
-            color: isLiveMode ? 'var(--accent-red)' : 'var(--accent-green)',
+            padding: '8px 16px', borderRadius: '10px',
+            backgroundColor: isLiveMode ? 'rgba(239, 68, 68, 0.12)' : 'linear-gradient(135deg, #B45309 0%, #D97706 100%)',
+            background: isLiveMode ? 'rgba(239, 68, 68, 0.12)' : 'linear-gradient(135deg, #B45309 0%, #D97706 100%)',
+            border: isLiveMode ? '1px solid #DC2626' : '1px solid rgba(255, 255, 255, 0.5)',
+            color: isLiveMode ? '#DC2626' : '#FFFFFF',
             fontSize: '12px', fontWeight: 'bold',
             cursor: isCameraStarting ? 'wait' : 'pointer',
             transition: 'all 0.2s',
+            boxShadow: isLiveMode ? 'none' : '0 4px 12px rgba(180, 83, 9, 0.2)',
           }}
         >
           {isCameraStarting ? (
@@ -504,11 +507,11 @@ export default function LiveCameraTracker({ onSignDetected, activeSign = 'PAIN' 
         </button>
 
         {cameraError ? (
-          <span style={{ fontSize: '11px', color: 'var(--accent-yellow)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span style={{ fontSize: '11px', color: '#B45309', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <AlertCircle size={12} /> {cameraError}
           </span>
         ) : (
-          <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+          <span style={{ fontSize: '11px', color: '#57534E' }}>
             {isMediaPipeMode
               ? 'MediaPipe Hands CDN • 21 Landmarks → WS /api/gesture/ws/stream'
               : 'MediaPipe Hand Pipeline • Sub-30ms Edge Inference'}
