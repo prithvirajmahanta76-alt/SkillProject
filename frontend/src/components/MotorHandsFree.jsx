@@ -427,27 +427,44 @@ export default function MotorHandsFree({
   return (
     <div
       style={{
-        background: 'linear-gradient(145deg, #070D18 0%, #0B162C 60%, #091224 100%)',
+        background: 'radial-gradient(ellipse at 15% 15%, rgba(245, 158, 11, 0.1) 0%, transparent 55%), radial-gradient(ellipse at 85% 85%, rgba(180, 83, 9, 0.08) 0%, transparent 55%), linear-gradient(135deg, #FAF6EE 0%, #F5ECE0 50%, #EFE3D3 100%)',
         borderRadius: '24px',
-        border: '1px solid rgba(20, 184, 166, 0.22)',
+        border: '1px solid rgba(255, 255, 255, 0.9)',
         padding: '28px',
         display: 'flex',
         flexDirection: 'column',
         gap: '24px',
-        boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(20, 184, 166, 0.08)',
-        color: '#F8FAFC',
-        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif', position: 'relative', overflow: 'hidden'",
+        boxShadow: '0 25px 60px -15px rgba(180, 83, 9, 0.08), 0 0 1px 1px rgba(217, 180, 130, 0.25)',
+        backdropFilter: 'blur(24px)',
+        color: '#1C1917',
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
+      {/* Decorative ambient background blur */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '-100px',
+          right: '-60px',
+          width: '320px',
+          height: '320px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(217, 119, 6, 0.08) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }}
+      />
+
       {/* Dynamic Keyframes */}
       <style>{`
         @keyframes avatarPulse {
-          0%, 100% { filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.4)); }
-          50% { filter: drop-shadow(0 0 18px rgba(245, 158, 11, 0.6)); }
+          0%, 100% { filter: drop-shadow(0 0 8px rgba(15, 118, 110, 0.25)); }
+          50% { filter: drop-shadow(0 0 18px rgba(217, 119, 6, 0.35)); }
         }
         @keyframes dwellGlow {
-          0% { box-shadow: 0 0 10px rgba(20, 184, 166, 0.4); }
-          100% { box-shadow: 0 0 25px rgba(20, 184, 166, 0.8); }
+          0% { box-shadow: 0 0 10px rgba(217, 119, 6, 0.3); }
+          100% { box-shadow: 0 0 25px rgba(217, 119, 6, 0.6); }
         }
       `}</style>
 
@@ -459,7 +476,7 @@ export default function MotorHandsFree({
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '16px',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          borderBottom: '1px solid rgba(217, 180, 130, 0.35)',
           paddingBottom: '20px',
         }}
       >
@@ -469,13 +486,13 @@ export default function MotorHandsFree({
               width: '48px',
               height: '48px',
               borderRadius: '14px',
-              background: 'linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)',
-              border: '1px solid rgba(20, 184, 166, 0.4)',
+              background: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#FFFFFF',
-              boxShadow: '0 8px 20px rgba(20, 184, 166, 0.35)',
+              boxShadow: '0 8px 20px rgba(180, 83, 9, 0.25)',
             }}
           >
             <UserCheck size={28} />
@@ -487,7 +504,7 @@ export default function MotorHandsFree({
                   fontSize: '22px',
                   fontWeight: '800',
                   margin: 0,
-                  color: '#F1F5F9',
+                  color: '#1C1917',
                   letterSpacing: '-0.3px',
                 }}
               >
@@ -497,9 +514,9 @@ export default function MotorHandsFree({
                 style={{
                   padding: '3px 10px',
                   borderRadius: '999px',
-                  background: 'rgba(245, 158, 11, 0.15)',
-                  color: '#FBBF24',
-                  border: '1px solid rgba(245, 158, 11, 0.35)',
+                  background: 'rgba(217, 119, 6, 0.12)',
+                  color: '#B45309',
+                  border: '1px solid rgba(217, 119, 6, 0.3)',
                   fontSize: '11px',
                   fontWeight: '800',
                 }}
@@ -507,7 +524,7 @@ export default function MotorHandsFree({
                 TOUCHLESS UI
               </span>
             </div>
-            <p style={{ fontSize: '13px', color: '#94A3B8', margin: '4px 0 0' }}>
+            <p style={{ fontSize: '13px', color: '#57534E', margin: '4px 0 0' }}>
               MediaPipe 468 3D Face Mesh: Head Pitch/Yaw nods and Eye Aspect Ratio (EAR) sustained blink for ALS, Cerebral Palsy, and Quadriplegia.
             </p>
           </div>
@@ -523,9 +540,9 @@ export default function MotorHandsFree({
             style={{
               padding: '8px 16px',
               borderRadius: '10px',
-              background: isLiveCamera ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-              border: isLiveCamera ? '1.5px solid #10B981' : '1px solid rgba(255, 255, 255, 0.12)',
-              color: isLiveCamera ? '#34D399' : '#E2E8F0',
+              background: isLiveCamera ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.75)',
+              border: isLiveCamera ? '1.5px solid #059669' : '1px solid rgba(217, 180, 130, 0.45)',
+              color: isLiveCamera ? '#047857' : '#78350F',
               fontSize: '12px',
               fontWeight: '700',
               display: 'flex',
@@ -533,17 +550,18 @@ export default function MotorHandsFree({
               gap: '6px',
               cursor: cameraStarting ? 'wait' : 'pointer',
               transition: 'all 0.2s',
+              boxShadow: '0 2px 8px rgba(180, 83, 9, 0.05)',
             }}
           >
             {cameraStarting ? (
               '⏳ Loading Face Mesh…'
             ) : isLiveCamera ? (
               <>
-                <VideoOff size={15} color="#34D399" /> Live Face Mesh Active
+                <VideoOff size={15} color="#047857" /> Live Face Mesh Active
               </>
             ) : (
               <>
-                <Camera size={15} color="#F59E0B" /> 🟢 Start Live Face Camera
+                <Camera size={15} color="#B45309" /> 🟢 Start Live Face Camera
               </>
             )}
           </button>
@@ -555,15 +573,16 @@ export default function MotorHandsFree({
             style={{
               padding: '8px 16px',
               borderRadius: '10px',
-              background: voiceFeedbackEnabled ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-              border: voiceFeedbackEnabled ? '1px solid #3B82F6' : '1px solid rgba(255, 255, 255, 0.1)',
-              color: voiceFeedbackEnabled ? '#60A5FA' : '#94A3B8',
+              background: voiceFeedbackEnabled ? 'rgba(15, 118, 110, 0.12)' : 'rgba(255, 255, 255, 0.75)',
+              border: voiceFeedbackEnabled ? '1px solid #0F766E' : '1px solid rgba(217, 180, 130, 0.45)',
+              color: voiceFeedbackEnabled ? '#0F766E' : '#78716C',
               fontSize: '12px',
               fontWeight: '700',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
               cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(180, 83, 9, 0.05)',
             }}
             title="Toggle synthesized voice confirmation"
           >
@@ -578,15 +597,16 @@ export default function MotorHandsFree({
             style={{
               padding: '8px 16px',
               borderRadius: '10px',
-              background: sensitivity === 'high' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-              border: sensitivity === 'high' ? '1.5px solid #F59E0B' : '1px solid rgba(255, 255, 255, 0.1)',
-              color: sensitivity === 'high' ? '#FBBF24' : '#E2E8F0',
+              background: sensitivity === 'high' ? 'rgba(217, 119, 6, 0.15)' : 'rgba(255, 255, 255, 0.75)',
+              border: sensitivity === 'high' ? '1.5px solid #D97706' : '1px solid rgba(217, 180, 130, 0.45)',
+              color: sensitivity === 'high' ? '#92400E' : '#57534E',
               fontSize: '12px',
               fontWeight: '700',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
               cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(180, 83, 9, 0.05)',
             }}
           >
             <Sliders size={15} />
@@ -637,9 +657,9 @@ export default function MotorHandsFree({
         {/* Visualizer 1: Simulated / Live 3D Face Wireframe Avatar */}
         <div
           style={{
-            background: 'radial-gradient(ellipse at 50% 50%, rgba(15, 118, 110, 0.25) 0%, rgba(7, 13, 24, 0.95) 75%)',
+            background: 'radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.98) 0%, rgba(248, 241, 230, 0.92) 100%)',
             borderRadius: '20px',
-            border: '1px solid rgba(20, 184, 166, 0.3)',
+            border: '1px solid rgba(217, 180, 130, 0.5)',
             padding: '20px',
             display: 'flex',
             flexDirection: 'column',
@@ -647,7 +667,7 @@ export default function MotorHandsFree({
             justifyContent: 'center',
             position: 'relative',
             overflow: 'hidden',
-            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(20, 184, 166, 0.1)',
+            boxShadow: '0 12px 30px rgba(180, 83, 9, 0.06), inset 0 0 20px rgba(255, 255, 255, 0.9)',
           }}
         >
           <div
@@ -657,7 +677,7 @@ export default function MotorHandsFree({
               left: '16px',
               fontSize: '11px',
               fontWeight: '800',
-              color: '#2DD4BF',
+              color: '#0F766E',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
@@ -665,7 +685,7 @@ export default function MotorHandsFree({
               letterSpacing: '0.05em',
             }}
           >
-            <Activity size={13} color="#2DD4BF" /> {isLiveCamera ? 'Live Face Mesh 3D' : 'Face Mesh Pose 3D'}
+            <Activity size={13} color="#0F766E" /> {isLiveCamera ? 'Live Face Mesh 3D' : 'Face Mesh Pose 3D'}
           </div>
 
           <div
@@ -677,9 +697,9 @@ export default function MotorHandsFree({
               fontWeight: '800',
               padding: '3px 10px',
               borderRadius: '999px',
-              background: ear < 0.20 ? 'rgba(239, 68, 68, 0.25)' : 'rgba(16, 185, 129, 0.25)',
-              color: ear < 0.20 ? '#FCA5A5' : '#6EE7B7',
-              border: `1px solid ${ear < 0.20 ? 'rgba(239, 68, 68, 0.5)' : 'rgba(16, 185, 129, 0.5)'}`,
+              background: ear < 0.20 ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+              color: ear < 0.20 ? '#B91C1C' : '#047857',
+              border: `1px solid ${ear < 0.20 ? 'rgba(239, 68, 68, 0.35)' : 'rgba(16, 185, 129, 0.35)'}`,
             }}
           >
             {ear < 0.20 ? 'BLINK ACTIVE' : 'EYES TRACKED'}
@@ -702,9 +722,9 @@ export default function MotorHandsFree({
           >
             <svg width="150" height="150" viewBox="0 0 150 150">
               <defs>
-                <radialGradient id="headGlowDark" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="rgba(20, 184, 166, 0.25)" />
-                  <stop offset="100%" stopColor="rgba(7, 13, 24, 0.8)" />
+                <radialGradient id="headGlowLight" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="rgba(245, 158, 11, 0.12)" />
+                  <stop offset="100%" stopColor="rgba(255, 255, 255, 0.9)" />
                 </radialGradient>
               </defs>
 
@@ -714,8 +734,8 @@ export default function MotorHandsFree({
                 cy="75"
                 rx="52"
                 ry="64"
-                fill="url(#headGlowDark)"
-                stroke="#14B8A6"
+                fill="url(#headGlowLight)"
+                stroke="#0F766E"
                 strokeWidth="2"
                 strokeDasharray={pitch !== 0 || yaw !== 0 ? 'none' : '4 3'}
               />
@@ -724,18 +744,18 @@ export default function MotorHandsFree({
               <path
                 d={`M 75 20 Q ${75 + yaw * 0.8} 75 75 130`}
                 fill="none"
-                stroke="#F59E0B"
+                stroke="#D97706"
                 strokeWidth="1.5"
-                opacity="0.7"
+                opacity="0.8"
               />
 
               {/* Eyebrow / Eye Axis */}
               <path
                 d={`M 35 ${65 + pitch * 0.6} Q 75 ${63 + pitch * 0.6} 115 ${65 + pitch * 0.6}`}
                 fill="none"
-                stroke="#2DD4BF"
+                stroke="#0D9488"
                 strokeWidth="1.5"
-                opacity="0.6"
+                opacity="0.7"
               />
 
               {/* Left Eye Aperture */}
@@ -744,8 +764,8 @@ export default function MotorHandsFree({
                 cy={66 + pitch * 0.6}
                 rx="9"
                 ry={ear < 0.20 ? 1.5 : 5.5}
-                fill={ear < 0.20 ? '#EF4444' : '#14B8A6'}
-                stroke="#2DD4BF"
+                fill={ear < 0.20 ? '#DC2626' : '#0F766E'}
+                stroke="#0D9488"
                 strokeWidth="1.5"
               />
 
@@ -755,19 +775,19 @@ export default function MotorHandsFree({
                 cy={66 + pitch * 0.6}
                 rx="9"
                 ry={ear < 0.20 ? 1.5 : 5.5}
-                fill={ear < 0.20 ? '#EF4444' : '#14B8A6'}
-                stroke="#2DD4BF"
+                fill={ear < 0.20 ? '#DC2626' : '#0F766E'}
+                stroke="#0D9488"
                 strokeWidth="1.5"
               />
 
               {/* Nose Bridge Landmark */}
-              <circle cx={75 + yaw * 0.4} cy={82 + pitch * 0.5} r="3" fill="#FBBF24" />
+              <circle cx={75 + yaw * 0.4} cy={82 + pitch * 0.5} r="3" fill="#D97706" />
 
               {/* Mouth Landmark Curve */}
               <path
                 d={`M 60 ${105 + pitch * 0.5} Q 75 ${110 + pitch * 0.5} 90 ${105 + pitch * 0.5}`}
                 fill="none"
-                stroke="#F59E0B"
+                stroke="#B45309"
                 strokeWidth="2"
                 strokeLinecap="round"
               />
@@ -795,42 +815,42 @@ export default function MotorHandsFree({
             style={{
               fontSize: '12px',
               fontWeight: '700',
-              color: '#94A3B8',
+              color: '#57534E',
               textAlign: 'center',
             }}
           >
-            Orientation: Pitch <span style={{ color: '#34D399' }}>{pitch > 0 ? `+${pitch}°` : `${pitch}°`}</span> | Yaw <span style={{ color: '#FBBF24' }}>{yaw}°</span>
+            Orientation: Pitch <span style={{ color: '#047857' }}>{pitch > 0 ? `+${pitch}°` : `${pitch}°`}</span> | Yaw <span style={{ color: '#B45309' }}>{yaw}°</span>
           </div>
         </div>
 
         {/* Visualizer 2: Biomechanical Gauges HUD */}
         <div
           style={{
-            background: 'rgba(255, 255, 255, 0.03)',
+            background: 'rgba(255, 255, 255, 0.8)',
             borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.09)',
+            border: '1px solid rgba(217, 180, 130, 0.45)',
             padding: '24px',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
             gap: '16px',
-            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.4)',
+            boxShadow: '0 12px 30px rgba(180, 83, 9, 0.05)',
           }}
         >
           {/* Gauge 1: Head Pitch (Nod Up/Down) */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '14px', fontWeight: '800', color: '#F1F5F9' }}>
+                <span style={{ fontSize: '14px', fontWeight: '800', color: '#1C1917' }}>
                   Head Pitch (Vertical Nod)
                 </span>
-                <span style={{ fontSize: '11px', color: '#94A3B8' }}>Threshold &gt; +{pitchThreshold}°</span>
+                <span style={{ fontSize: '11px', color: '#78716C' }}>Threshold &gt; +{pitchThreshold}°</span>
               </div>
               <strong
                 style={{
                   fontSize: '14px',
                   fontWeight: '800',
-                  color: pitch >= pitchThreshold ? '#34D399' : '#94A3B8',
+                  color: pitch >= pitchThreshold ? '#047857' : '#78716C',
                 }}
               >
                 {pitch > 0 ? `+${pitch}° (Nod Confirmed)` : `${pitch}° (Neutral)`}
@@ -841,9 +861,9 @@ export default function MotorHandsFree({
               style={{
                 width: '100%',
                 height: '12px',
-                background: 'rgba(0, 0, 0, 0.4)',
+                background: 'rgba(231, 220, 206, 0.6)',
                 borderRadius: '6px',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(217, 180, 130, 0.35)',
                 position: 'relative',
                 overflow: 'hidden',
               }}
@@ -856,7 +876,7 @@ export default function MotorHandsFree({
                   top: 0,
                   bottom: 0,
                   width: '2px',
-                  backgroundColor: '#F59E0B',
+                  backgroundColor: '#D97706',
                   zIndex: 2,
                 }}
               />
@@ -865,7 +885,7 @@ export default function MotorHandsFree({
                   width: `${Math.min(100, Math.max(0, ((pitch + 30) / 60) * 100))}%`,
                   height: '100%',
                   background: pitch >= pitchThreshold
-                    ? 'linear-gradient(90deg, #10B981, #34D399)'
+                    ? 'linear-gradient(90deg, #059669, #10B981)'
                     : 'linear-gradient(90deg, #0F766E, #14B8A6)',
                   transition: 'width 0.25s ease-out',
                 }}
@@ -877,16 +897,16 @@ export default function MotorHandsFree({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '14px', fontWeight: '800', color: '#F1F5F9' }}>
+                <span style={{ fontSize: '14px', fontWeight: '800', color: '#1C1917' }}>
                   Head Yaw (Horizontal Shake)
                 </span>
-                <span style={{ fontSize: '11px', color: '#94A3B8' }}>Threshold ±{yawThreshold}°</span>
+                <span style={{ fontSize: '11px', color: '#78716C' }}>Threshold ±{yawThreshold}°</span>
               </div>
               <strong
                 style={{
                   fontSize: '14px',
                   fontWeight: '800',
-                  color: Math.abs(yaw) >= yawThreshold ? '#FBBF24' : '#94A3B8',
+                  color: Math.abs(yaw) >= yawThreshold ? '#B45309' : '#78716C',
                 }}
               >
                 {yaw !== 0 ? `${yaw}° (Shake Active)` : '0° (Center)'}
@@ -897,9 +917,9 @@ export default function MotorHandsFree({
               style={{
                 width: '100%',
                 height: '12px',
-                background: 'rgba(0, 0, 0, 0.4)',
+                background: 'rgba(231, 220, 206, 0.6)',
                 borderRadius: '6px',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(217, 180, 130, 0.35)',
                 position: 'relative',
                 overflow: 'hidden',
               }}
@@ -909,7 +929,7 @@ export default function MotorHandsFree({
                   width: `${Math.min(100, Math.max(0, ((yaw + 45) / 90) * 100))}%`,
                   height: '100%',
                   background: Math.abs(yaw) >= yawThreshold
-                    ? 'linear-gradient(90deg, #D97706, #FBBF24)'
+                    ? 'linear-gradient(90deg, #D97706, #F59E0B)'
                     : 'linear-gradient(90deg, #B45309, #D97706)',
                   transition: 'width 0.25s ease-out',
                 }}
@@ -921,17 +941,17 @@ export default function MotorHandsFree({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Eye size={16} color="#2DD4BF" />
-                <span style={{ fontSize: '14px', fontWeight: '800', color: '#F1F5F9' }}>
+                <Eye size={16} color="#0F766E" />
+                <span style={{ fontSize: '14px', fontWeight: '800', color: '#1C1917' }}>
                   Eye Aspect Ratio (EAR)
                 </span>
-                <span style={{ fontSize: '11px', color: '#94A3B8' }}>Closed &lt; 0.20</span>
+                <span style={{ fontSize: '11px', color: '#78716C' }}>Closed &lt; 0.20</span>
               </div>
               <strong
                 style={{
                   fontSize: '14px',
                   fontWeight: '800',
-                  color: ear < 0.20 ? '#F87171' : '#2DD4BF',
+                  color: ear < 0.20 ? '#DC2626' : '#0F766E',
                 }}
               >
                 {ear.toFixed(2)} {ear < 0.20 ? '● Sustained Blink' : '○ Open (Tracking)'}
@@ -942,9 +962,9 @@ export default function MotorHandsFree({
               style={{
                 width: '100%',
                 height: '12px',
-                background: 'rgba(0, 0, 0, 0.4)',
+                background: 'rgba(231, 220, 206, 0.6)',
                 borderRadius: '6px',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(217, 180, 130, 0.35)',
                 position: 'relative',
                 overflow: 'hidden',
               }}
@@ -955,7 +975,7 @@ export default function MotorHandsFree({
                   height: '100%',
                   background: ear < 0.20
                     ? 'linear-gradient(90deg, #DC2626, #EF4444)'
-                    : 'linear-gradient(90deg, #0F766E, #2DD4BF)',
+                    : 'linear-gradient(90deg, #0F766E, #14B8A6)',
                   transition: 'width 0.2s ease-out',
                 }}
               />
@@ -974,10 +994,10 @@ export default function MotorHandsFree({
             marginBottom: '14px',
           }}
         >
-          <span style={{ fontSize: '14px', fontWeight: '800', color: '#F1F5F9' }}>
+          <span style={{ fontSize: '14px', fontWeight: '800', color: '#1C1917' }}>
             Touchless Directives (Dwell Gaze or Perform Head/Eye Movement)
           </span>
-          <span style={{ fontSize: '12px', color: '#94A3B8' }}>
+          <span style={{ fontSize: '12px', color: '#78716C' }}>
             Dwell hold: {sensitivity === 'high' ? '0.8s' : '1.2s'}
           </span>
         </div>
@@ -999,9 +1019,9 @@ export default function MotorHandsFree({
               padding: '24px',
               borderRadius: '18px',
               background: motorAction === 'YES_CONFIRM'
-                ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.12) 100%)'
-                : 'rgba(255, 255, 255, 0.03)',
-              border: motorAction === 'YES_CONFIRM' ? '2px solid #10B981' : '1px solid rgba(255, 255, 255, 0.08)',
+                ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.08) 100%)'
+                : 'rgba(255, 255, 255, 0.82)',
+              border: motorAction === 'YES_CONFIRM' ? '2px solid #059669' : '1px solid rgba(217, 180, 130, 0.45)',
               textAlign: 'left',
               display: 'flex',
               flexDirection: 'column',
@@ -1010,7 +1030,7 @@ export default function MotorHandsFree({
               transition: 'all 0.2s',
               position: 'relative',
               overflow: 'hidden',
-              boxShadow: motorAction === 'YES_CONFIRM' ? '0 10px 25px rgba(16, 185, 129, 0.25)' : 'none',
+              boxShadow: motorAction === 'YES_CONFIRM' ? '0 10px 25px rgba(16, 185, 129, 0.18)' : '0 4px 14px rgba(180, 83, 9, 0.04)',
             }}
           >
             {dwellTarget === 'YES' && (
@@ -1021,23 +1041,23 @@ export default function MotorHandsFree({
                   left: 0,
                   height: '4px',
                   width: `${dwellProgress}%`,
-                  backgroundColor: '#10B981',
+                  backgroundColor: '#059669',
                   transition: 'width 0.06s linear',
                 }}
               />
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '800', color: '#34D399' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '800', color: '#047857' }}>
                 <CheckCircle2 size={24} /> YES / Confirm
               </div>
-              <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.2)', color: '#6EE7B7' }}>
+              <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.12)', color: '#047857' }}>
                 NOD HEAD ↓
               </span>
             </div>
-            <p style={{ fontSize: '13px', color: '#94A3B8', margin: 0, lineHeight: 1.4 }}>
+            <p style={{ fontSize: '13px', color: '#57534E', margin: 0, lineHeight: 1.4 }}>
               Nod head down forward to confirm appointment, approve medication intake, or agree with doctor.
             </p>
-            <div style={{ fontSize: '12px', fontWeight: '800', color: '#34D399', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '800', color: '#047857', display: 'flex', alignItems: 'center', gap: '6px' }}>
               ➔ Pitch &gt; +{pitchThreshold}° or Dwell Gaze
             </div>
           </button>
@@ -1052,9 +1072,9 @@ export default function MotorHandsFree({
               padding: '24px',
               borderRadius: '18px',
               background: motorAction === 'NO_CANCEL'
-                ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.12) 100%)'
-                : 'rgba(255, 255, 255, 0.03)',
-              border: motorAction === 'NO_CANCEL' ? '2px solid #F59E0B' : '1px solid rgba(255, 255, 255, 0.08)',
+                ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.08) 100%)'
+                : 'rgba(255, 255, 255, 0.82)',
+              border: motorAction === 'NO_CANCEL' ? '2px solid #D97706' : '1px solid rgba(217, 180, 130, 0.45)',
               textAlign: 'left',
               display: 'flex',
               flexDirection: 'column',
@@ -1063,7 +1083,7 @@ export default function MotorHandsFree({
               transition: 'all 0.2s',
               position: 'relative',
               overflow: 'hidden',
-              boxShadow: motorAction === 'NO_CANCEL' ? '0 10px 25px rgba(245, 158, 11, 0.25)' : 'none',
+              boxShadow: motorAction === 'NO_CANCEL' ? '0 10px 25px rgba(245, 158, 11, 0.18)' : '0 4px 14px rgba(180, 83, 9, 0.04)',
             }}
           >
             {dwellTarget === 'NO' && (
@@ -1074,23 +1094,23 @@ export default function MotorHandsFree({
                   left: 0,
                   height: '4px',
                   width: `${dwellProgress}%`,
-                  backgroundColor: '#F59E0B',
+                  backgroundColor: '#D97706',
                   transition: 'width 0.06s linear',
                 }}
               />
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '800', color: '#FBBF24' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '800', color: '#B45309' }}>
                 <XCircle size={24} /> NO / Cancel
               </div>
-              <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(245, 158, 11, 0.2)', color: '#FDE68A' }}>
+              <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(245, 158, 11, 0.12)', color: '#92400E' }}>
                 SHAKE HEAD ↔
               </span>
             </div>
-            <p style={{ fontSize: '13px', color: '#94A3B8', margin: 0, lineHeight: 1.4 }}>
+            <p style={{ fontSize: '13px', color: '#57534E', margin: 0, lineHeight: 1.4 }}>
               Shake head side-to-side to decline option, dismiss notifications, or cancel clinical procedures.
             </p>
-            <div style={{ fontSize: '12px', fontWeight: '800', color: '#FBBF24', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '800', color: '#B45309', display: 'flex', alignItems: 'center', gap: '6px' }}>
               ➔ Yaw &gt; ±{yawThreshold}° or Dwell Gaze
             </div>
           </button>
@@ -1105,9 +1125,9 @@ export default function MotorHandsFree({
               padding: '24px',
               borderRadius: '18px',
               background: motorAction === 'DOUBLE_BLINK_EMERGENCY'
-                ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.28) 0%, rgba(185, 28, 28, 0.15) 100%)'
-                : 'rgba(255, 255, 255, 0.03)',
-              border: motorAction === 'DOUBLE_BLINK_EMERGENCY' ? '2px solid #EF4444' : '1px solid rgba(239, 68, 68, 0.35)',
+                ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(185, 28, 28, 0.08) 100%)'
+                : 'rgba(255, 255, 255, 0.82)',
+              border: motorAction === 'DOUBLE_BLINK_EMERGENCY' ? '2px solid #DC2626' : '1px solid rgba(239, 68, 68, 0.3)',
               textAlign: 'left',
               display: 'flex',
               flexDirection: 'column',
@@ -1116,7 +1136,7 @@ export default function MotorHandsFree({
               transition: 'all 0.2s',
               position: 'relative',
               overflow: 'hidden',
-              boxShadow: motorAction === 'DOUBLE_BLINK_EMERGENCY' ? '0 10px 30px rgba(239, 68, 68, 0.35)' : 'none',
+              boxShadow: motorAction === 'DOUBLE_BLINK_EMERGENCY' ? '0 10px 30px rgba(239, 68, 68, 0.25)' : '0 4px 14px rgba(180, 83, 9, 0.04)',
             }}
           >
             {dwellTarget === 'BLINK' && (
@@ -1127,23 +1147,23 @@ export default function MotorHandsFree({
                   left: 0,
                   height: '4px',
                   width: `${dwellProgress}%`,
-                  backgroundColor: '#EF4444',
+                  backgroundColor: '#DC2626',
                   transition: 'width 0.06s linear',
                 }}
               />
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '800', color: '#F87171' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '800', color: '#B91C1C' }}>
                 <ShieldAlert size={24} /> Double Blink SOS
               </div>
-              <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(239, 68, 68, 0.25)', color: '#FCA5A5' }}>
+              <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(239, 68, 68, 0.15)', color: '#991B1B' }}>
                 CRITICAL
               </span>
             </div>
-            <p style={{ fontSize: '13px', color: '#94A3B8', margin: 0, lineHeight: 1.4 }}>
+            <p style={{ fontSize: '13px', color: '#57534E', margin: 0, lineHeight: 1.4 }}>
               Hold sustained double-blink for 1.2s to alert ICU staff, nurse desk, and crash cart station instantly.
             </p>
-            <div style={{ fontSize: '12px', fontWeight: '800', color: '#F87171', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '800', color: '#B91C1C', display: 'flex', alignItems: 'center', gap: '6px' }}>
               ➔ Sustained EAR &lt; 0.20 or Dwell
             </div>
           </button>
@@ -1158,9 +1178,9 @@ export default function MotorHandsFree({
               padding: '24px',
               borderRadius: '18px',
               background: motorAction === 'CALL_NURSE'
-                ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(29, 78, 216, 0.12) 100%)'
-                : 'rgba(255, 255, 255, 0.03)',
-              border: motorAction === 'CALL_NURSE' ? '2px solid #3B82F6' : '1px solid rgba(255, 255, 255, 0.08)',
+                ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(29, 78, 216, 0.08) 100%)'
+                : 'rgba(255, 255, 255, 0.82)',
+              border: motorAction === 'CALL_NURSE' ? '2px solid #2563EB' : '1px solid rgba(217, 180, 130, 0.45)',
               textAlign: 'left',
               display: 'flex',
               flexDirection: 'column',
@@ -1169,7 +1189,7 @@ export default function MotorHandsFree({
               transition: 'all 0.2s',
               position: 'relative',
               overflow: 'hidden',
-              boxShadow: motorAction === 'CALL_NURSE' ? '0 10px 25px rgba(59, 130, 246, 0.25)' : 'none',
+              boxShadow: motorAction === 'CALL_NURSE' ? '0 10px 25px rgba(59, 130, 246, 0.18)' : '0 4px 14px rgba(180, 83, 9, 0.04)',
             }}
           >
             {dwellTarget === 'NURSE' && (
@@ -1180,23 +1200,23 @@ export default function MotorHandsFree({
                   left: 0,
                   height: '4px',
                   width: `${dwellProgress}%`,
-                  backgroundColor: '#3B82F6',
+                  backgroundColor: '#2563EB',
                   transition: 'width 0.06s linear',
                 }}
               />
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '800', color: '#60A5FA' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '800', color: '#1D4ED8' }}>
                 <BellRing size={24} /> Call Bedside Nurse
               </div>
-              <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(59, 130, 246, 0.2)', color: '#93C5FD' }}>
+              <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(59, 130, 246, 0.12)', color: '#1E40AF' }}>
                 DWELL GAZE
               </span>
             </div>
-            <p style={{ fontSize: '13px', color: '#94A3B8', margin: 0, lineHeight: 1.4 }}>
+            <p style={{ fontSize: '13px', color: '#57534E', margin: 0, lineHeight: 1.4 }}>
               Dispatches non-emergency attendant to your hospital bed for IV drip check or general assistance.
             </p>
-            <div style={{ fontSize: '12px', fontWeight: '800', color: '#60A5FA', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '800', color: '#1D4ED8', display: 'flex', alignItems: 'center', gap: '6px' }}>
               ➔ Look at card for 1.2s to trigger
             </div>
           </button>
@@ -1211,9 +1231,9 @@ export default function MotorHandsFree({
               padding: '24px',
               borderRadius: '18px',
               background: motorAction === 'REQUEST_WATER'
-                ? 'linear-gradient(135deg, rgba(20, 184, 166, 0.25) 0%, rgba(15, 118, 110, 0.12) 100%)'
-                : 'rgba(255, 255, 255, 0.03)',
-              border: motorAction === 'REQUEST_WATER' ? '2px solid #14B8A6' : '1px solid rgba(255, 255, 255, 0.08)',
+                ? 'linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(15, 118, 110, 0.08) 100%)'
+                : 'rgba(255, 255, 255, 0.82)',
+              border: motorAction === 'REQUEST_WATER' ? '2px solid #0F766E' : '1px solid rgba(217, 180, 130, 0.45)',
               textAlign: 'left',
               display: 'flex',
               flexDirection: 'column',
@@ -1222,7 +1242,7 @@ export default function MotorHandsFree({
               transition: 'all 0.2s',
               position: 'relative',
               overflow: 'hidden',
-              boxShadow: motorAction === 'REQUEST_WATER' ? '0 10px 25px rgba(20, 184, 166, 0.25)' : 'none',
+              boxShadow: motorAction === 'REQUEST_WATER' ? '0 10px 25px rgba(20, 184, 166, 0.18)' : '0 4px 14px rgba(180, 83, 9, 0.04)',
             }}
           >
             {dwellTarget === 'WATER' && (
@@ -1233,23 +1253,23 @@ export default function MotorHandsFree({
                   left: 0,
                   height: '4px',
                   width: `${dwellProgress}%`,
-                  backgroundColor: '#14B8A6',
+                  backgroundColor: '#0F766E',
                   transition: 'width 0.06s linear',
                 }}
               />
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '800', color: '#2DD4BF' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '800', color: '#0F766E' }}>
                 <Droplets size={24} /> Water & Oral Care
               </div>
-              <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(20, 184, 166, 0.2)', color: '#5EEAD4' }}>
+              <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(20, 184, 166, 0.12)', color: '#115E59' }}>
                 DWELL GAZE
               </span>
             </div>
-            <p style={{ fontSize: '13px', color: '#94A3B8', margin: 0, lineHeight: 1.4 }}>
+            <p style={{ fontSize: '13px', color: '#57534E', margin: 0, lineHeight: 1.4 }}>
               Signals caregiver for water sips, oral suctioning, or dry mouth relief.
             </p>
-            <div style={{ fontSize: '12px', fontWeight: '800', color: '#2DD4BF', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '800', color: '#0F766E', display: 'flex', alignItems: 'center', gap: '6px' }}>
               ➔ Look at card for 1.2s to trigger
             </div>
           </button>
@@ -1264,9 +1284,9 @@ export default function MotorHandsFree({
               padding: '24px',
               borderRadius: '18px',
               background: motorAction === 'BED_REPOSITION'
-                ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(126, 34, 206, 0.12) 100%)'
-                : 'rgba(255, 255, 255, 0.03)',
-              border: motorAction === 'BED_REPOSITION' ? '2px solid #A855F7' : '1px solid rgba(255, 255, 255, 0.08)',
+                ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(126, 34, 206, 0.08) 100%)'
+                : 'rgba(255, 255, 255, 0.82)',
+              border: motorAction === 'BED_REPOSITION' ? '2px solid #7E22CE' : '1px solid rgba(217, 180, 130, 0.45)',
               textAlign: 'left',
               display: 'flex',
               flexDirection: 'column',
@@ -1275,7 +1295,7 @@ export default function MotorHandsFree({
               transition: 'all 0.2s',
               position: 'relative',
               overflow: 'hidden',
-              boxShadow: motorAction === 'BED_REPOSITION' ? '0 10px 25px rgba(168, 85, 247, 0.25)' : 'none',
+              boxShadow: motorAction === 'BED_REPOSITION' ? '0 10px 25px rgba(168, 85, 247, 0.18)' : '0 4px 14px rgba(180, 83, 9, 0.04)',
             }}
           >
             {dwellTarget === 'REPOSITION' && (
@@ -1286,23 +1306,23 @@ export default function MotorHandsFree({
                   left: 0,
                   height: '4px',
                   width: `${dwellProgress}%`,
-                  backgroundColor: '#A855F7',
+                  backgroundColor: '#7E22CE',
                   transition: 'width 0.06s linear',
                 }}
               />
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '800', color: '#C084FC' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '800', color: '#7E22CE' }}>
                 <BedDouble size={24} /> Reposition Bed
               </div>
-              <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(168, 85, 247, 0.2)', color: '#E9D5FF' }}>
+              <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', background: 'rgba(168, 85, 247, 0.12)', color: '#6B21A8' }}>
                 DWELL GAZE
               </span>
             </div>
-            <p style={{ fontSize: '13px', color: '#94A3B8', margin: 0, lineHeight: 1.4 }}>
+            <p style={{ fontSize: '13px', color: '#57534E', margin: 0, lineHeight: 1.4 }}>
               Request motorized backrest incline change (+30° sitting / flat) for comfort.
             </p>
-            <div style={{ fontSize: '12px', fontWeight: '800', color: '#C084FC', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '800', color: '#7E22CE', display: 'flex', alignItems: 'center', gap: '6px' }}>
               ➔ Look at card for 1.2s to trigger
             </div>
           </button>
@@ -1314,14 +1334,14 @@ export default function MotorHandsFree({
         style={{
           padding: '20px 24px',
           borderRadius: '16px',
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid rgba(20, 184, 166, 0.25)',
+          background: 'rgba(255, 255, 255, 0.85)',
+          border: '1px solid rgba(217, 180, 130, 0.5)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '14px',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+          boxShadow: '0 8px 24px rgba(180, 83, 9, 0.05)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -1330,15 +1350,15 @@ export default function MotorHandsFree({
               width: '12px',
               height: '12px',
               borderRadius: '50%',
-              backgroundColor: '#10B981',
-              boxShadow: '0 0 12px #10B981',
+              backgroundColor: '#059669',
+              boxShadow: '0 0 12px rgba(5, 150, 105, 0.5)',
             }}
           />
           <div>
-            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: '#94A3B8', fontWeight: '800', letterSpacing: '0.05em' }}>
+            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: '#78716C', fontWeight: '800', letterSpacing: '0.05em' }}>
               Current Biomechanical Intent:
             </span>
-            <div style={{ fontSize: '17px', fontWeight: '800', color: '#F1F5F9', marginTop: '2px' }}>
+            <div style={{ fontSize: '17px', fontWeight: '800', color: '#1C1917', marginTop: '2px' }}>
               {motorFeedback || 'Listening for Head Nod (+18°), Head Shake (±22°), or Sustained Eye Blink...'}
             </div>
           </div>
@@ -1349,11 +1369,11 @@ export default function MotorHandsFree({
             style={{
               padding: '8px 16px',
               borderRadius: '10px',
-              background: 'rgba(245, 158, 11, 0.15)',
-              border: '1px solid rgba(245, 158, 11, 0.35)',
+              background: 'rgba(217, 119, 6, 0.12)',
+              border: '1px solid rgba(217, 119, 6, 0.3)',
               fontSize: '12px',
               fontWeight: '700',
-              color: '#FBBF24',
+              color: '#92400E',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
