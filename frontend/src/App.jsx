@@ -320,27 +320,23 @@ export default function App() {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'linear-gradient(135deg, #0A0F1C 0%, #0D1B2A 50%, #0A1628 100%)', color: '#E2E8F0' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'radial-gradient(ellipse at 15% 15%, rgba(245, 158, 11, 0.1) 0%, transparent 55%), radial-gradient(ellipse at 85% 85%, rgba(180, 83, 9, 0.08) 0%, transparent 55%), linear-gradient(135deg, #FAF6EE 0%, #F5ECE0 50%, #EFE3D3 100%)', color: '#1C1917' }}>
       <style>{`
         @keyframes pulse-logo {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.5), 0 0 0 0 rgba(245, 158, 11, 0.3); }
-          50% { box-shadow: 0 0 0 10px rgba(20, 184, 166, 0.0), 0 0 0 20px rgba(245, 158, 11, 0.0); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.5), 0 0 0 0 rgba(15, 118, 110, 0.3); }
+          50% { box-shadow: 0 0 0 10px rgba(217, 119, 6, 0.0), 0 0 0 20px rgba(15, 118, 110, 0.0); }
         }
         @keyframes pulse-live {
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.5; transform: scale(0.85); }
         }
         @keyframes pulse-sos {
-          0%, 100% { opacity: 1; background: rgba(220, 38, 38, 0.9); }
-          50% { opacity: 0.7; background: rgba(239, 68, 68, 0.6); }
+          0%, 100% { opacity: 1; background: rgba(220, 38, 38, 0.95); }
+          50% { opacity: 0.85; background: rgba(239, 68, 68, 0.75); }
         }
-        @keyframes tab-glow {
-          0%, 100% { box-shadow: inset 3px 0 0 #14B8A6, 0 0 8px rgba(20, 184, 166, 0.2); }
-          50% { box-shadow: inset 3px 0 0 #F59E0B, 0 0 16px rgba(245, 158, 11, 0.3); }
-        }
-        @keyframes sidebar-hover-glow {
-          0% { background: rgba(20, 184, 166, 0.05); }
-          100% { background: rgba(20, 184, 166, 0.12); }
+        @keyframes tab-glow-gold {
+          0%, 100% { box-shadow: inset 3px 0 0 #B45309, 0 4px 16px rgba(180, 83, 9, 0.15); }
+          50% { box-shadow: inset 3px 0 0 #D97706, 0 4px 22px rgba(245, 158, 11, 0.3); }
         }
       `}</style>
 
@@ -353,25 +349,25 @@ export default function App() {
           </div>
           <button
             onClick={() => setSosActive(false)}
-            style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', borderRadius: '6px', padding: '4px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 'bold' }}
+            style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)', color: '#fff', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 'bold' }}
           >
             <XCircle size={14} /> Dismiss
           </button>
         </div>
       )}
 
-      {/* Top Header Bar */}
-      <header style={{ background: 'linear-gradient(135deg, #0A0F1C 0%, #0F1E2E 100%)', borderBottom: '1px solid rgba(20, 184, 166, 0.15)', padding: '0 24px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, backdropFilter: 'blur(20px)', zIndex: 50 }}>
+      {/* Top Header Bar — Frosted Golden Cream Glassmorphism */}
+      <header style={{ background: 'rgba(255, 255, 255, 0.75)', borderBottom: '1px solid rgba(217, 180, 130, 0.45)', padding: '0 24px', height: '62px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', zIndex: 50, boxShadow: '0 4px 20px rgba(180, 83, 9, 0.04)' }}>
         {/* Left: Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'linear-gradient(135deg, #14B8A6 0%, #F59E0B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulse-logo 2.5s ease-in-out infinite', flexShrink: 0 }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, #B45309 0%, #D97706 60%, #0F766E 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulse-logo 2.5s ease-in-out infinite', flexShrink: 0, boxShadow: '0 4px 14px rgba(180, 83, 9, 0.25)' }}>
             <HeartPulse size={22} color="#fff" />
           </div>
           <div>
-            <div style={{ fontSize: '16px', fontWeight: '800', color: '#F1F5F9', letterSpacing: '0.02em', lineHeight: 1.2 }}>SignBridge Universal</div>
-            <div style={{ fontSize: '11px', color: '#64748B', letterSpacing: '0.05em' }}>Multi-Modal Healthcare Accessibility Bridge</div>
+            <div style={{ fontSize: '17px', fontWeight: '900', color: '#1C1917', letterSpacing: '-0.3px', lineHeight: 1.2 }}>SignBridge Universal</div>
+            <div style={{ fontSize: '11px', color: '#78716C', letterSpacing: '0.02em', fontWeight: '600' }}>Multi-Modal Healthcare Accessibility Bridge</div>
           </div>
-          <span style={{ fontSize: '10px', textTransform: 'uppercase', padding: '2px 8px', borderRadius: '999px', backgroundColor: 'rgba(20, 184, 166, 0.12)', color: '#14B8A6', border: '1px solid rgba(20, 184, 166, 0.3)', letterSpacing: '0.08em', fontWeight: '700', marginLeft: '4px' }}>
+          <span style={{ fontSize: '10px', textTransform: 'uppercase', padding: '3px 10px', borderRadius: '999px', background: 'rgba(245, 158, 11, 0.15)', color: '#92400E', border: '1px solid rgba(245, 158, 11, 0.4)', letterSpacing: '0.08em', fontWeight: '800', marginLeft: '6px' }}>
             WCAG 2.1 AAA
           </span>
         </div>
@@ -381,33 +377,33 @@ export default function App() {
           {/* ABHA + OPD Buttons */}
           <button
             onClick={() => setShowAbhaModal(true)}
-            style={{ padding: '7px 14px', borderRadius: '8px', backgroundColor: 'rgba(21, 128, 61, 0.1)', color: '#4ADE80', border: '1px solid rgba(74, 222, 128, 0.3)', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.15s' }}
+            style={{ padding: '8px 16px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.8)', color: '#15803D', border: '1px solid rgba(21, 128, 61, 0.35)', fontSize: '12px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.15s', boxShadow: '0 2px 8px rgba(21, 128, 61, 0.08)' }}
           >
-            <CreditCard size={14} /> 🪪 ABHA Card
+            <CreditCard size={15} /> 🪪 ABHA Card
           </button>
           <button
             onClick={() => setShowOpdModal(true)}
-            style={{ padding: '7px 14px', borderRadius: '8px', backgroundColor: 'rgba(20, 184, 166, 0.1)', color: '#14B8A6', border: '1px solid rgba(20, 184, 166, 0.3)', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.15s' }}
+            style={{ padding: '8px 16px', borderRadius: '10px', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(254, 243, 199, 0.8) 100%)', color: '#B45309', border: '1px solid rgba(217, 119, 6, 0.4)', fontSize: '12px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.15s', boxShadow: '0 2px 8px rgba(180, 83, 9, 0.1)' }}
           >
-            <FileText size={14} /> 🖨️ OPD Slip
+            <FileText size={15} /> 🖨️ OPD Slip
           </button>
 
           {/* Divider */}
-          <div style={{ width: '1px', height: '28px', background: 'rgba(100,116,139,0.3)' }} />
+          <div style={{ width: '1px', height: '28px', background: 'rgba(217, 180, 130, 0.5)' }} />
 
           {/* Live Badge + Clock */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '999px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
-              <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#EF4444', animation: 'pulse-live 1.2s ease-in-out infinite' }} />
-              <span style={{ fontSize: '11px', fontWeight: '800', color: '#EF4444', letterSpacing: '0.1em' }}>LIVE</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '999px', background: 'rgba(220, 38, 38, 0.1)', border: '1px solid rgba(220, 38, 38, 0.3)' }}>
+              <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#DC2626', animation: 'pulse-live 1.2s ease-in-out infinite' }} />
+              <span style={{ fontSize: '11px', fontWeight: '800', color: '#DC2626', letterSpacing: '0.1em' }}>LIVE</span>
             </div>
-            <div style={{ fontSize: '14px', fontWeight: '700', color: '#94A3B8', fontVariantNumeric: 'tabular-nums', letterSpacing: '0.05em' }}>
+            <div style={{ fontSize: '14px', fontWeight: '800', color: '#57534E', fontVariantNumeric: 'tabular-nums', letterSpacing: '0.05em' }}>
               {liveClock}
             </div>
           </div>
 
           {/* Hospital name */}
-          <div style={{ fontSize: '12px', color: '#475569', borderLeft: '1px solid rgba(100,116,139,0.3)', paddingLeft: '16px' }}>
+          <div style={{ fontSize: '12px', color: '#78716C', fontWeight: '700', borderLeft: '1px solid rgba(217, 180, 130, 0.5)', paddingLeft: '16px' }}>
             Govt. Civil Hospital
           </div>
         </div>
@@ -416,8 +412,8 @@ export default function App() {
       {/* Body: Sidebar + Content */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
-        {/* Left Sidebar Navigation */}
-        <aside style={{ width: '72px', background: 'rgba(10, 15, 28, 0.95)', backdropFilter: 'blur(20px)', borderRight: '1px solid rgba(20, 184, 166, 0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px 0', gap: '4px', flexShrink: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+        {/* Left Sidebar Navigation — Golden Cream Glassmorphism */}
+        <aside style={{ width: '74px', background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderRight: '1px solid rgba(217, 180, 130, 0.4)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px 0', gap: '6px', flexShrink: 0, overflowY: 'auto', overflowX: 'hidden', boxShadow: '2px 0 15px rgba(180, 83, 9, 0.03)' }}>
 
           {/* Nav Tab Pills */}
           {TABS.map((tab) => {
@@ -429,31 +425,28 @@ export default function App() {
                 onClick={() => setActiveTab(tab.id)}
                 title={tab.label}
                 style={{
-                  width: '56px',
-                  minHeight: '56px',
-                  borderRadius: '12px',
+                  width: '58px',
+                  minHeight: '58px',
+                  borderRadius: '16px',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '4px',
-                  border: 'none',
+                  border: isActive ? '1px solid rgba(217, 119, 6, 0.4)' : '1px solid transparent',
                   cursor: 'pointer',
-                  transition: 'all 0.2s',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   position: 'relative',
                   background: isActive
-                    ? 'linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(245,158,11,0.12) 100%)'
+                    ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(254, 243, 199, 0.9) 100%)'
                     : 'transparent',
-                  animation: isActive ? 'tab-glow 2.5s ease-in-out infinite' : 'none',
-                  boxShadow: isActive
-                    ? 'inset 3px 0 0 #14B8A6, 0 0 12px rgba(20,184,166,0.2)'
-                    : 'none',
-                  color: isActive ? '#F59E0B' : '#64748B',
+                  animation: isActive ? 'tab-glow-gold 2.5s ease-in-out infinite' : 'none',
+                  color: isActive ? '#B45309' : '#78716C',
                   padding: '8px 4px',
                 }}
               >
-                <Icon size={20} />
-                <span style={{ fontSize: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.2, color: isActive ? '#F59E0B' : '#475569' }}>
+                <Icon size={21} />
+                <span style={{ fontSize: '9px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.2, color: isActive ? '#92400E' : '#78716C' }}>
                   {tab.emoji}
                 </span>
               </button>
@@ -464,22 +457,22 @@ export default function App() {
           <div style={{ flex: 1 }} />
 
           {/* Language Selector at bottom */}
-          <div style={{ width: '56px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', paddingTop: '8px', borderTop: '1px solid rgba(20,184,166,0.1)' }}>
-            <div style={{ fontSize: '8px', color: '#475569', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2px' }}>Lang</div>
+          <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', paddingTop: '8px', borderTop: '1px solid rgba(217, 180, 130, 0.4)' }}>
+            <div style={{ fontSize: '8px', color: '#78716C', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2px' }}>Lang</div>
             {LANGUAGES.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => setSelectedLanguage(lang.code)}
                 title={lang.name}
                 style={{
-                  width: '44px',
+                  width: '46px',
                   padding: '4px 2px',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   fontSize: '9px',
-                  fontWeight: selectedLanguage === lang.code ? '800' : '500',
-                  background: selectedLanguage === lang.code ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
-                  color: selectedLanguage === lang.code ? '#F59E0B' : '#64748B',
-                  border: selectedLanguage === lang.code ? '1px solid rgba(245,158,11,0.4)' : '1px solid transparent',
+                  fontWeight: selectedLanguage === lang.code ? '800' : '600',
+                  background: selectedLanguage === lang.code ? 'linear-gradient(135deg, #B45309, #D97706)' : 'rgba(255, 255, 255, 0.5)',
+                  color: selectedLanguage === lang.code ? '#FFFFFF' : '#78716C',
+                  border: selectedLanguage === lang.code ? '1px solid #B45309' : '1px solid rgba(217, 180, 130, 0.35)',
                   cursor: 'pointer',
                   transition: 'all 0.15s',
                   textAlign: 'center',
@@ -494,8 +487,8 @@ export default function App() {
           </div>
         </aside>
 
-        {/* Main Content Area */}
-        <main style={{ flex: 1, overflowY: 'auto', padding: '24px', background: 'linear-gradient(135deg, #0A0F1C 0%, #0D1B2A 50%, #0A1628 100%)' }}>
+        {/* Main Content Area — Golden Cream Glassmorphism Canvas */}
+        <main style={{ flex: 1, overflowY: 'auto', padding: '24px', background: 'radial-gradient(ellipse at 15% 15%, rgba(245, 158, 11, 0.08) 0%, transparent 60%), radial-gradient(ellipse at 85% 85%, rgba(180, 83, 9, 0.06) 0%, transparent 60%), linear-gradient(135deg, #FAF6ED 0%, #F5ECE0 50%, #EFE4D4 100%)' }}>
 
           {/* TAB 1: DUAL-SCREEN HOSPITAL KIOSK (PHASE 1) */}
           {activeTab === 'kiosk' && (
