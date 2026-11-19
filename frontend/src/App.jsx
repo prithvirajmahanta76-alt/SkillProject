@@ -297,324 +297,369 @@ export default function App() {
     }
   };
 
+  // Live clock state
+  const [liveClock, setLiveClock] = useState('');
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      setLiveClock(now.toLocaleTimeString('en-IN', { hour12: false }));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const TABS = [
+    { id: 'kiosk', label: 'Hospital Kiosk', emoji: '🏥', icon: Activity },
+    { id: 'deaf_hub', label: 'Deaf & Mute Hub', emoji: '🧏', icon: Hand },
+    { id: 'blind_mode', label: 'Blind Assistant', emoji: '🦯', icon: Eye },
+    { id: 'motor_mode', label: 'Motor Hands-Free', emoji: '♿', icon: UserCheck },
+    { id: 'sos_grid', label: '1-Tap SOS Grid', emoji: '🚨', icon: ShieldAlert },
+    { id: 'impact_stats', label: 'Impact & ROI', emoji: '📊', icon: BarChart3 },
+    { id: 'api_tester', label: 'API Tester', emoji: '🔌', icon: Terminal },
+  ];
+
   return (
-    <div className={`min-h-screen ${sosActive ? 'sos-strobe-active' : ''}`} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-      {/* Top Accessibility & Regional Language Bar */}
-      <header style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--bg-secondary)', padding: '12px 24px', boxShadow: '0 2px 10px rgba(180, 83, 9, 0.04)' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, #D97706 0%, #B45309 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(180, 83, 9, 0.25)' }}>
-              <HeartPulse size={26} />
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'linear-gradient(135deg, #0A0F1C 0%, #0D1B2A 50%, #0A1628 100%)', color: '#E2E8F0' }}>
+      <style>{`
+        @keyframes pulse-logo {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.5), 0 0 0 0 rgba(245, 158, 11, 0.3); }
+          50% { box-shadow: 0 0 0 10px rgba(20, 184, 166, 0.0), 0 0 0 20px rgba(245, 158, 11, 0.0); }
+        }
+        @keyframes pulse-live {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(0.85); }
+        }
+        @keyframes pulse-sos {
+          0%, 100% { opacity: 1; background: rgba(220, 38, 38, 0.9); }
+          50% { opacity: 0.7; background: rgba(239, 68, 68, 0.6); }
+        }
+        @keyframes tab-glow {
+          0%, 100% { box-shadow: inset 3px 0 0 #14B8A6, 0 0 8px rgba(20, 184, 166, 0.2); }
+          50% { box-shadow: inset 3px 0 0 #F59E0B, 0 0 16px rgba(245, 158, 11, 0.3); }
+        }
+        @keyframes sidebar-hover-glow {
+          0% { background: rgba(20, 184, 166, 0.05); }
+          100% { background: rgba(20, 184, 166, 0.12); }
+        }
+      `}</style>
+
+      {/* SOS Alert Banner */}
+      {sosActive && (
+        <div style={{ animation: 'pulse-sos 1s infinite', padding: '10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 100, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold', fontSize: '14px', color: '#fff' }}>
+            <ShieldAlert size={18} />
+            🚨 SOS ACTIVE — Emergency dispatched. Medical team alerted.
+          </div>
+          <button
+            onClick={() => setSosActive(false)}
+            style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', borderRadius: '6px', padding: '4px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 'bold' }}
+          >
+            <XCircle size={14} /> Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Top Header Bar */}
+      <header style={{ background: 'linear-gradient(135deg, #0A0F1C 0%, #0F1E2E 100%)', borderBottom: '1px solid rgba(20, 184, 166, 0.15)', padding: '0 24px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, backdropFilter: 'blur(20px)', zIndex: 50 }}>
+        {/* Left: Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'linear-gradient(135deg, #14B8A6 0%, #F59E0B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulse-logo 2.5s ease-in-out infinite', flexShrink: 0 }}>
+            <HeartPulse size={22} color="#fff" />
+          </div>
+          <div>
+            <div style={{ fontSize: '16px', fontWeight: '800', color: '#F1F5F9', letterSpacing: '0.02em', lineHeight: 1.2 }}>SignBridge Universal</div>
+            <div style={{ fontSize: '11px', color: '#64748B', letterSpacing: '0.05em' }}>Multi-Modal Healthcare Accessibility Bridge</div>
+          </div>
+          <span style={{ fontSize: '10px', textTransform: 'uppercase', padding: '2px 8px', borderRadius: '999px', backgroundColor: 'rgba(20, 184, 166, 0.12)', color: '#14B8A6', border: '1px solid rgba(20, 184, 166, 0.3)', letterSpacing: '0.08em', fontWeight: '700', marginLeft: '4px' }}>
+            WCAG 2.1 AAA
+          </span>
+        </div>
+
+        {/* Right: Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {/* ABHA + OPD Buttons */}
+          <button
+            onClick={() => setShowAbhaModal(true)}
+            style={{ padding: '7px 14px', borderRadius: '8px', backgroundColor: 'rgba(21, 128, 61, 0.1)', color: '#4ADE80', border: '1px solid rgba(74, 222, 128, 0.3)', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.15s' }}
+          >
+            <CreditCard size={14} /> 🪪 ABHA Card
+          </button>
+          <button
+            onClick={() => setShowOpdModal(true)}
+            style={{ padding: '7px 14px', borderRadius: '8px', backgroundColor: 'rgba(20, 184, 166, 0.1)', color: '#14B8A6', border: '1px solid rgba(20, 184, 166, 0.3)', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.15s' }}
+          >
+            <FileText size={14} /> 🖨️ OPD Slip
+          </button>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '28px', background: 'rgba(100,116,139,0.3)' }} />
+
+          {/* Live Badge + Clock */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '999px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+              <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#EF4444', animation: 'pulse-live 1.2s ease-in-out infinite' }} />
+              <span style={{ fontSize: '11px', fontWeight: '800', color: '#EF4444', letterSpacing: '0.1em' }}>LIVE</span>
             </div>
-            <div>
-              <h1 style={{ fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-                SignBridge Universal
-                <span style={{ fontSize: '11px', textTransform: 'uppercase', padding: '2px 8px', borderRadius: '999px', backgroundColor: 'rgba(15, 118, 110, 0.12)', color: 'var(--accent-cyan)', border: '1px solid var(--accent-cyan)' }}>
-                  WCAG 2.1 AAA
-                </span>
-              </h1>
-              <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                Multi-Modal Two-Way Healthcare & Accessibility Bridge
-              </p>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: '#94A3B8', fontVariantNumeric: 'tabular-nums', letterSpacing: '0.05em' }}>
+              {liveClock}
             </div>
           </div>
 
-          {/* Regional Indian Language Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Language / भाषा:</span>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              {LANGUAGES.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => setSelectedLanguage(lang.code)}
-                  style={{
-                    padding: '8px 14px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: selectedLanguage === lang.code ? 'bold' : 'normal',
-                    backgroundColor: selectedLanguage === lang.code ? 'var(--accent-yellow)' : 'var(--bg-card)',
-                    color: selectedLanguage === lang.code ? '#FFFFFF' : 'var(--text-primary)',
-                    border: '1px solid ' + (selectedLanguage === lang.code ? 'var(--accent-yellow)' : 'var(--border)'),
-                    transition: 'all 0.2s',
-                    boxShadow: selectedLanguage === lang.code ? '0 2px 6px rgba(180, 83, 9, 0.2)' : 'none',
-                  }}
-                >
-                  {lang.native}
-                </button>
-              ))}
-            </div>
-
-            {/* Official Hospital Documents Buttons */}
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                onClick={() => setShowAbhaModal(true)}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: '8px',
-                  backgroundColor: 'rgba(21, 128, 61, 0.1)',
-                  color: 'var(--accent-green)',
-                  border: '1px solid var(--accent-green)',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                }}
-              >
-                <CreditCard size={15} /> 🪪 ABHA Card
-              </button>
-              <button
-                onClick={() => setShowOpdModal(true)}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: '8px',
-                  backgroundColor: 'rgba(15, 118, 110, 0.1)',
-                  color: 'var(--accent-cyan)',
-                  border: '1px solid var(--accent-cyan)',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                }}
-              >
-                <FileText size={15} /> 🖨️ OPD Slip
-              </button>
-            </div>
-
-            {sosActive && (
-              <button
-                onClick={() => setSosActive(false)}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--accent-red)',
-                  color: '#fff',
-                  fontWeight: 'bold',
-                  fontSize: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
-              >
-                <XCircle size={16} /> Dismiss SOS
-              </button>
-            )}
+          {/* Hospital name */}
+          <div style={{ fontSize: '12px', color: '#475569', borderLeft: '1px solid rgba(100,116,139,0.3)', paddingLeft: '16px' }}>
+            Govt. Civil Hospital
           </div>
         </div>
       </header>
 
-      {/* Navigation Tabs */}
-      <nav style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', padding: '8px 24px' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', gap: '8px', overflowX: 'auto' }}>
-          {[
-            { id: 'kiosk', label: '🏥 Hospital Kiosk (Split-Screen)', icon: Activity },
-            { id: 'deaf_hub', label: '🧏 Deaf & Mute Hub', icon: Hand },
-            { id: 'blind_mode', label: '🦯 Blind Assistant (AI Camera)', icon: Eye },
-            { id: 'motor_mode', label: '♿ Motor Hands-Free', icon: UserCheck },
-            { id: 'sos_grid', label: '🚨 1-Tap SOS Grid', icon: ShieldAlert },
-            { id: 'impact_stats', label: '📊 Hospital Impact & ROI', icon: BarChart3 },
-            { id: 'api_tester', label: '🔌 API Contract Tester', icon: Terminal },
-          ].map((tab) => {
+      {/* Body: Sidebar + Content */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+
+        {/* Left Sidebar Navigation */}
+        <aside style={{ width: '72px', background: 'rgba(10, 15, 28, 0.95)', backdropFilter: 'blur(20px)', borderRight: '1px solid rgba(20, 184, 166, 0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px 0', gap: '4px', flexShrink: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+
+          {/* Nav Tab Pills */}
+          {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
+                title={tab.label}
                 style={{
+                  width: '56px',
+                  minHeight: '56px',
+                  borderRadius: '12px',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 18px',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: isActive ? 'bold' : '500',
-                  backgroundColor: isActive ? 'var(--bg-card)' : 'transparent',
-                  color: isActive ? 'var(--accent-yellow)' : 'var(--text-secondary)',
-                  border: isActive ? '1px solid var(--border)' : '1px solid transparent',
-                  borderBottom: isActive ? '3px solid var(--accent-yellow)' : '3px solid transparent',
-                  boxShadow: isActive ? '0 2px 8px rgba(180, 83, 9, 0.08)' : 'none',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.15s',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  position: 'relative',
+                  background: isActive
+                    ? 'linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(245,158,11,0.12) 100%)'
+                    : 'transparent',
+                  animation: isActive ? 'tab-glow 2.5s ease-in-out infinite' : 'none',
+                  boxShadow: isActive
+                    ? 'inset 3px 0 0 #14B8A6, 0 0 12px rgba(20,184,166,0.2)'
+                    : 'none',
+                  color: isActive ? '#F59E0B' : '#64748B',
+                  padding: '8px 4px',
                 }}
               >
-                <Icon size={18} />
-                {tab.label}
+                <Icon size={20} />
+                <span style={{ fontSize: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.2, color: isActive ? '#F59E0B' : '#475569' }}>
+                  {tab.emoji}
+                </span>
               </button>
             );
           })}
-        </div>
-      </nav>
 
-      {/* Main Content Area */}
-      <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
-        {/* TAB 1: DUAL-SCREEN HOSPITAL KIOSK (PHASE 1) */}
-        {activeTab === 'kiosk' && (
-          <HospitalKiosk
-            currentSign={currentSign}
-            setCurrentSign={setCurrentSign}
-            accumulatedTokens={accumulatedTokens}
-            setAccumulatedTokens={setAccumulatedTokens}
-            synthesizedText={synthesizedText}
-            translatedResult={translatedResult}
-            isTranslating={isTranslating}
-            handleSynthesizeTokens={handleSynthesizeTokens}
-            doctorSpeechInput={doctorSpeechInput}
-            setDoctorSpeechInput={setDoctorSpeechInput}
-            handleDoctorToGloss={handleDoctorToGloss}
-            doctorGlosses={doctorGlosses}
-            doctorGrammarGloss={doctorGrammarGloss}
-            doctorSignClips={doctorSignClips}
-            isPlayingAudio={isPlayingAudio}
-            handlePlayAudio={handlePlayAudio}
-            isAnalyzingCough={isAnalyzingCough}
-            coughResult={coughResult}
-            handleAnalyzeCough={handleAnalyzeCough}
-          />
-        )}
+          {/* Spacer */}
+          <div style={{ flex: 1 }} />
 
-        {/* TAB 2: DEAF & MUTE HUB (PHASE 2) */}
-        {activeTab === 'deaf_hub' && (
-          <DeafMuteHub
-            accumulatedTokens={accumulatedTokens}
-            setAccumulatedTokens={setAccumulatedTokens}
-            synthesizedText={synthesizedText}
-            translatedResult={translatedResult}
-            isTranslating={isTranslating}
-            handleSynthesizeTokens={handleSynthesizeTokens}
-            selectedLanguage={selectedLanguage}
-            isPlayingAudio={isPlayingAudio}
-            handlePlayAudio={handlePlayAudio}
-          />
-        )}
-
-        {/* TAB 3: BLIND & LOW-VISION ASSISTANT (PHASE 3) */}
-        {activeTab === 'blind_mode' && (
-          <BlindAssistant
-            visionResult={visionResult}
-            isScanning={isScanning}
-            handleScanMedicine={handleScanMedicine}
-            ddiResult={ddiResult}
-            isPlayingAudio={isPlayingAudio}
-            handlePlayAudio={handlePlayAudio}
-          />
-        )}
-
-        {/* TAB 4: MOTOR-IMPAIRED HANDS-FREE (PHASE 4) */}
-        {activeTab === 'motor_mode' && (
-          <MotorHandsFree
-            motorAction={motorAction}
-            setMotorAction={setMotorAction}
-            motorFeedback={motorFeedback}
-            setMotorFeedback={setMotorFeedback}
-            handleTriggerSOS={handleTriggerSOS}
-          />
-        )}
-
-        {/* TAB 5: 1-TAP SOS EMERGENCY GRID (PHASE 5) */}
-        {activeTab === 'sos_grid' && (
-          <SosGrid
-            sosActive={sosActive}
-            setSosActive={setSosActive}
-            sosMessage={sosMessage}
-            setSosMessage={setSosMessage}
-            handleTriggerSOS={handleTriggerSOS}
-            handlePlayAudio={handlePlayAudio}
-            isPlayingAudio={isPlayingAudio}
-          />
-        )}
-
-        {/* TAB: HOSPITAL IMPACT & TELEMETRY ROI (PHASE 6) */}
-        {activeTab === 'impact_stats' && (
-          <HospitalImpactRoi
-            impactData={impactData}
-            loadingImpact={loadingImpact}
-            fetchImpactReport={fetchImpactReport}
-            setShowAbhaModal={setShowAbhaModal}
-            setShowOpdModal={setShowOpdModal}
-            currentConsultId={currentConsultId}
-            setCurrentConsultId={setCurrentConsultId}
-          />
-        )}
-
-        {/* TAB 6: API CONTRACT TESTER */}
-        {activeTab === 'api_tester' && (
-          <div style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border)', padding: '28px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--accent-cyan)' }}>
-              🔌 FastAPI Live JSON Contract Verifier
-            </h2>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '20px' }}>
-              Test any of the 6 backend stub endpoints directly against <code>http://localhost:8000/api</code>.
-            </p>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
-              {[
-                { id: 'gesture', label: 'POST /gesture/predict' },
-                { id: 'vocabulary', label: 'GET /gesture/vocabulary' },
-                { id: 'translate', label: 'POST /translate/synthesize' },
-                { id: 'vision', label: 'POST /vision/scan-medicine' },
-                { id: 'face_control', label: 'POST /face-control/detect-gesture' },
-                { id: 'speech_tts', label: 'POST /speech/tts' },
-                { id: 'emergency_phrases', label: 'GET /emergency/phrases' },
-                { id: 'trigger_sos', label: 'POST /emergency/trigger-sos' },
-              ].map((ep) => (
-                <button
-                  key={ep.id}
-                  onClick={() => setTestEndpoint(ep.id)}
-                  style={{
-                    padding: '8px 14px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    backgroundColor: testEndpoint === ep.id ? 'var(--accent-cyan)' : 'var(--bg-primary)',
-                    color: testEndpoint === ep.id ? '#000' : 'var(--text-primary)',
-                    border: '1px solid ' + (testEndpoint === ep.id ? 'var(--accent-cyan)' : 'var(--border)'),
-                    fontWeight: testEndpoint === ep.id ? 'bold' : 'normal',
-                  }}
-                >
-                  {ep.label}
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleRunApiTest}
-              disabled={apiLoading}
-              style={{
-                padding: '12px 24px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--accent-yellow)',
-                color: '#000',
-                fontWeight: 'bold',
-                fontSize: '14px',
-                marginBottom: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-            >
-              <RefreshCw size={16} /> {apiLoading ? 'Querying API...' : `Execute ${testEndpoint}`}
-            </button>
-
-            {/* Response Viewer */}
-            <div style={{ padding: '16px', borderRadius: '12px', backgroundColor: '#090d16', border: '1px solid var(--border)', fontFamily: 'var(--font-mono)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                <span>Response Payload (JSON)</span>
-                <span>Status: 200 OK (Contract Verified)</span>
-              </div>
-              <pre style={{ color: '#38bdf8', fontSize: '13px', overflowX: 'auto', maxHeight: '380px' }}>
-                {apiResponseJson
-                  ? JSON.stringify(apiResponseJson, null, 2)
-                  : '// Click "Execute" to inspect the JSON response schema for ' + testEndpoint}
-              </pre>
-            </div>
+          {/* Language Selector at bottom */}
+          <div style={{ width: '56px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', paddingTop: '8px', borderTop: '1px solid rgba(20,184,166,0.1)' }}>
+            <div style={{ fontSize: '8px', color: '#475569', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2px' }}>Lang</div>
+            {LANGUAGES.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => setSelectedLanguage(lang.code)}
+                title={lang.name}
+                style={{
+                  width: '44px',
+                  padding: '4px 2px',
+                  borderRadius: '6px',
+                  fontSize: '9px',
+                  fontWeight: selectedLanguage === lang.code ? '800' : '500',
+                  background: selectedLanguage === lang.code ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
+                  color: selectedLanguage === lang.code ? '#F59E0B' : '#64748B',
+                  border: selectedLanguage === lang.code ? '1px solid rgba(245,158,11,0.4)' : '1px solid transparent',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  textAlign: 'center',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {lang.native}
+              </button>
+            ))}
           </div>
-        )}
-      </main>
+        </aside>
+
+        {/* Main Content Area */}
+        <main style={{ flex: 1, overflowY: 'auto', padding: '24px', background: 'linear-gradient(135deg, #0A0F1C 0%, #0D1B2A 50%, #0A1628 100%)' }}>
+
+          {/* TAB 1: DUAL-SCREEN HOSPITAL KIOSK (PHASE 1) */}
+          {activeTab === 'kiosk' && (
+            <HospitalKiosk
+              currentSign={currentSign}
+              setCurrentSign={setCurrentSign}
+              accumulatedTokens={accumulatedTokens}
+              setAccumulatedTokens={setAccumulatedTokens}
+              synthesizedText={synthesizedText}
+              translatedResult={translatedResult}
+              isTranslating={isTranslating}
+              handleSynthesizeTokens={handleSynthesizeTokens}
+              doctorSpeechInput={doctorSpeechInput}
+              setDoctorSpeechInput={setDoctorSpeechInput}
+              handleDoctorToGloss={handleDoctorToGloss}
+              doctorGlosses={doctorGlosses}
+              doctorGrammarGloss={doctorGrammarGloss}
+              doctorSignClips={doctorSignClips}
+              isPlayingAudio={isPlayingAudio}
+              handlePlayAudio={handlePlayAudio}
+              isAnalyzingCough={isAnalyzingCough}
+              coughResult={coughResult}
+              handleAnalyzeCough={handleAnalyzeCough}
+            />
+          )}
+
+          {/* TAB 2: DEAF & MUTE HUB (PHASE 2) */}
+          {activeTab === 'deaf_hub' && (
+            <DeafMuteHub
+              accumulatedTokens={accumulatedTokens}
+              setAccumulatedTokens={setAccumulatedTokens}
+              synthesizedText={synthesizedText}
+              translatedResult={translatedResult}
+              isTranslating={isTranslating}
+              handleSynthesizeTokens={handleSynthesizeTokens}
+              selectedLanguage={selectedLanguage}
+              isPlayingAudio={isPlayingAudio}
+              handlePlayAudio={handlePlayAudio}
+            />
+          )}
+
+          {/* TAB 3: BLIND & LOW-VISION ASSISTANT (PHASE 3) */}
+          {activeTab === 'blind_mode' && (
+            <BlindAssistant
+              visionResult={visionResult}
+              isScanning={isScanning}
+              handleScanMedicine={handleScanMedicine}
+              ddiResult={ddiResult}
+              isPlayingAudio={isPlayingAudio}
+              handlePlayAudio={handlePlayAudio}
+            />
+          )}
+
+          {/* TAB 4: MOTOR-IMPAIRED HANDS-FREE (PHASE 4) */}
+          {activeTab === 'motor_mode' && (
+            <MotorHandsFree
+              motorAction={motorAction}
+              setMotorAction={setMotorAction}
+              motorFeedback={motorFeedback}
+              setMotorFeedback={setMotorFeedback}
+              handleTriggerSOS={handleTriggerSOS}
+            />
+          )}
+
+          {/* TAB 5: 1-TAP SOS EMERGENCY GRID (PHASE 5) */}
+          {activeTab === 'sos_grid' && (
+            <SosGrid
+              sosActive={sosActive}
+              setSosActive={setSosActive}
+              sosMessage={sosMessage}
+              setSosMessage={setSosMessage}
+              handleTriggerSOS={handleTriggerSOS}
+              handlePlayAudio={handlePlayAudio}
+              isPlayingAudio={isPlayingAudio}
+            />
+          )}
+
+          {/* TAB: HOSPITAL IMPACT & TELEMETRY ROI (PHASE 6) */}
+          {activeTab === 'impact_stats' && (
+            <HospitalImpactRoi
+              impactData={impactData}
+              loadingImpact={loadingImpact}
+              fetchImpactReport={fetchImpactReport}
+              setShowAbhaModal={setShowAbhaModal}
+              setShowOpdModal={setShowOpdModal}
+              currentConsultId={currentConsultId}
+              setCurrentConsultId={setCurrentConsultId}
+            />
+          )}
+
+          {/* TAB 6: API CONTRACT TESTER */}
+          {activeTab === 'api_tester' && (
+            <div style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border)', padding: '28px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--accent-cyan)' }}>
+                🔌 FastAPI Live JSON Contract Verifier
+              </h2>
+              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '20px' }}>
+                Test any of the 6 backend stub endpoints directly against <code>http://localhost:8000/api</code>.
+              </p>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
+                {[
+                  { id: 'gesture', label: 'POST /gesture/predict' },
+                  { id: 'vocabulary', label: 'GET /gesture/vocabulary' },
+                  { id: 'translate', label: 'POST /translate/synthesize' },
+                  { id: 'vision', label: 'POST /vision/scan-medicine' },
+                  { id: 'face_control', label: 'POST /face-control/detect-gesture' },
+                  { id: 'speech_tts', label: 'POST /speech/tts' },
+                  { id: 'emergency_phrases', label: 'GET /emergency/phrases' },
+                  { id: 'trigger_sos', label: 'POST /emergency/trigger-sos' },
+                ].map((ep) => (
+                  <button
+                    key={ep.id}
+                    onClick={() => setTestEndpoint(ep.id)}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      backgroundColor: testEndpoint === ep.id ? 'var(--accent-cyan)' : 'var(--bg-primary)',
+                      color: testEndpoint === ep.id ? '#000' : 'var(--text-primary)',
+                      border: '1px solid ' + (testEndpoint === ep.id ? 'var(--accent-cyan)' : 'var(--border)'),
+                      fontWeight: testEndpoint === ep.id ? 'bold' : 'normal',
+                    }}
+                  >
+                    {ep.label}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={handleRunApiTest}
+                disabled={apiLoading}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--accent-yellow)',
+                  color: '#000',
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <RefreshCw size={16} /> {apiLoading ? 'Querying API...' : `Execute ${testEndpoint}`}
+              </button>
+
+              {/* Response Viewer */}
+              <div style={{ padding: '16px', borderRadius: '12px', backgroundColor: '#090d16', border: '1px solid var(--border)', fontFamily: 'var(--font-mono)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  <span>Response Payload (JSON)</span>
+                  <span>Status: 200 OK (Contract Verified)</span>
+                </div>
+                <pre style={{ color: '#38bdf8', fontSize: '13px', overflowX: 'auto', maxHeight: '380px' }}>
+                  {apiResponseJson
+                    ? JSON.stringify(apiResponseJson, null, 2)
+                    : '// Click "Execute" to inspect the JSON response schema for ' + testEndpoint}
+                </pre>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
 
       {/* MODAL 1: OFFICIAL GOVERNMENT ABHA SMART CARD */}
       {showAbhaModal && (
