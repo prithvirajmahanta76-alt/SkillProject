@@ -1,0 +1,54 @@
+# ==============================================================================
+# SignBridge Universal — Production Multi-Worker Backend Container
+# Designed for High Concurrency (1M+ Users Architecture)
+# ==============================================================================
+
+# Build Stage: Compile dependencies
+FROM python:3.11-slim AS builder
+
+WORKDIR /install
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# Final Stage: Lean, secure runtime
+FROM python:3.11-slim AS runtime
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy installed packages from builder
+COPY --from=builder /install /usr/local
+
+# Create non-root system user for security
+RUN addgroup --system --gid 1001 appgroup && \
+    adduser --system --uid 1001 --gid 1001 appuser
+
+# Copy backend code
+COPY backend/ /app/
+
+# Ensure data directory exists and has proper permissions
+RUN mkdir -p /app/data && chown -R appuser:appgroup /app
+
+USER appuser
+
+EXPOSE 8000
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=8000
+
+# Docker Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Production Gunicorn master process with 4 asynchronous Uvicorn worker threads
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "4", "-b", "0.0.0.0:8000", "--access-logfile", "-", "--error-logfile", "-", "app.main:app"]

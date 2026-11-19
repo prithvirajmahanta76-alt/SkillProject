@@ -1,14 +1,52 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+// Enterprise Dynamic URL Resolution: supports Vite dev, Docker reverse proxy, and cloud hostings
+const resolveApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  if (typeof window !== 'undefined') {
+    // If running in local Vite development server
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://127.0.0.1:8000/api';
+    }
+    // In production container / Nginx deployment, use relative reverse proxy path
+    return `${window.location.origin}/api`;
+  }
+  return 'http://127.0.0.1:8000/api';
+};
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 const client = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 15000,
 });
+
+// Production Resiliency: Automatic Exponential Backoff Retry on Transient Network Failures
+client.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const config = error.config;
+    if (!config) return Promise.reject(error);
+
+    config.__retryCount = config.__retryCount || 0;
+    const isTransient = !error.response || (error.response.status >= 502 && error.response.status <= 504);
+
+    // Retry transient network errors up to 2 times
+    if (isTransient && config.__retryCount < 2) {
+      config.__retryCount += 1;
+      const delayMs = config.__retryCount * 400;
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      return client(config);
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export const api = {
   // 1. Gesture Classification

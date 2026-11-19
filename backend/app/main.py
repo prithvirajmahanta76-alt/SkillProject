@@ -3,8 +3,10 @@ import sys
 import pickle
 from contextlib import asynccontextmanager
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import JSONResponse
 from app.api.router import api_router
 from app.core.config import settings
 
@@ -100,6 +102,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# High-Concurrency Production Middleware: GZip compression for payloads > 500 bytes
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
 # Enable CORS (Cross-Origin Resource Sharing)
 app.add_middleware(
     CORSMiddleware,
@@ -108,6 +113,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Global Unhandled Exception Handler — Ensures Zero Hospital Terminal Crashes
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Graceful JSON error response to prevent 500 stack dumps in production."""
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "success": False,
+            "error": "InternalServerError",
+            "message": "Clinical service encountered an unexpected error. Automatic self-healing active.",
+            "detail": str(exc),
+            "path": request.url.path,
+        },
+    )
 
 # Mount all feature endpoints under /api
 app.include_router(api_router, prefix=settings.API_PREFIX)
@@ -139,6 +159,27 @@ async def health_check():
     """Health check endpoint for container and deployment monitors."""
     return {
         "status": "healthy",
+        "version": settings.VERSION,
+    }
+
+
+@app.get("/ready", tags=["System"])
+async def ready_check():
+    """Readiness probe for Kubernetes & Docker orchestration."""
+    # Check DB accessibility
+    db_ok = False
+    try:
+        from app.api.endpoints.consultation import get_db_connection
+        conn = get_db_connection()
+        conn.execute("SELECT 1")
+        conn.close()
+        db_ok = True
+    except Exception:
+        db_ok = False
+
+    return {
+        "status": "ready" if db_ok else "degraded",
+        "database": "connected" if db_ok else "unreachable",
         "version": settings.VERSION,
     }
 

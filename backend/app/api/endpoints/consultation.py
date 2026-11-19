@@ -19,9 +19,20 @@ os.makedirs(DB_DIR, exist_ok=True)
 DB_PATH = os.path.join(DB_DIR, "signbridge.db")
 
 
+def get_db_connection() -> sqlite3.Connection:
+    """Returns an optimized, WAL-enabled SQLite connection supporting high concurrency."""
+    conn = sqlite3.connect(DB_PATH, timeout=25.0)
+    conn.execute("PRAGMA journal_mode = WAL;")
+    conn.execute("PRAGMA synchronous = NORMAL;")
+    conn.execute("PRAGMA busy_timeout = 5000;")
+    conn.execute("PRAGMA cache_size = -64000;")  # 64MB memory cache
+    conn.execute("PRAGMA foreign_keys = ON;")
+    return conn
+
+
 def init_db():
     """Initializes SQLite tables for clinical records, encounters, and audit trails."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     # Patients Table
@@ -186,7 +197,7 @@ class ConsultationSlipResponse(BaseModel):
     description="Persists clinical diagnosis, ISL token history, and prescriptions into the hospital database.",
 )
 async def create_consultation(request: CreateConsultationRequest) -> ConsultationSlipResponse:
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("SELECT name, abha_id, age, blood_group, disability_type, allergies FROM patients WHERE id = ?", (request.patient_id,))
@@ -285,7 +296,7 @@ async def create_consultation(request: CreateConsultationRequest) -> Consultatio
     summary="Get OPD Consultation Slip JSON Details",
 )
 async def get_consultation_slip(consultation_id: str) -> ConsultationSlipResponse:
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -525,7 +536,7 @@ class ABDMConsentHIUResponse(BaseModel):
     description="Authenticates ABHA Health ID against National Health Authority registry with KYC clearance.",
 )
 async def abdm_verify_abha(request: ABHAVerifyRequest) -> ABHAVerifyResponse:
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT id, name, abha_id, age, blood_group, disability_type, allergies FROM patients WHERE abha_id = ? OR id = 'PAT-9842'", (request.abha_id,))
     row = cur.fetchone()
@@ -561,7 +572,7 @@ async def abdm_verify_abha(request: ABHAVerifyRequest) -> ABHAVerifyResponse:
     description="Publishes signed OPD diagnostic encounter into patient's Ayushman Bharat Health Account (HIP).",
 )
 async def abdm_link_hip_record(request: ABDMHIPLinkRequest) -> ABDMHIPLinkResponse:
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT id, abha_id, patient_id FROM consultations WHERE id = ?", (request.consultation_id,))
     row = cur.fetchone()
@@ -608,7 +619,7 @@ async def abdm_link_hip_record(request: ABDMHIPLinkRequest) -> ABDMHIPLinkRespon
     description="Retrieves patient-consented historical records, chronic illnesses, and cross-hospital encounters.",
 )
 async def abdm_consent_request(request: ABDMConsentHIURequest) -> ABDMConsentHIUResponse:
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT name, abha_id, allergies, chronic_conditions FROM patients WHERE abha_id = ? OR id = 'PAT-9842'", (request.abha_id,))
     row = cur.fetchone()
@@ -674,7 +685,7 @@ class SyncQueueResponse(BaseModel):
     description="Monitors edge node autonomous operational readiness, local DB integrity, and pending sync batches.",
 )
 async def get_edge_node_status() -> EdgeNodeStatusResponse:
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT count(*) FROM consultations")
     total_enc = cur.fetchone()[0]
@@ -710,7 +721,7 @@ async def get_edge_node_status() -> EdgeNodeStatusResponse:
     description="Generates an official Government of India Ayushman Bharat Health Account (ABHA) Digital Smart Card with photo, QR code, and critical allergy alerts.",
 )
 async def get_abha_smart_card(patient_id: str):
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT id, name, abha_id, age, blood_group, disability_type, allergies, chronic_conditions FROM patients WHERE id = ? OR abha_id = ?", (patient_id, patient_id))
     row = cur.fetchone()
@@ -893,7 +904,7 @@ async def get_abha_smart_card(patient_id: str):
     description="Idempotently synchronizes stored offline records when connectivity to ABDM cloud is restored.",
 )
 async def sync_offline_queue() -> SyncQueueResponse:
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT id FROM consultations ORDER BY created_at DESC LIMIT 10")
     rows = cur.fetchall()
@@ -953,7 +964,7 @@ class HospitalImpactReportResponse(BaseModel):
     description="Calculates life-saving clinical metrics, allergy blocks count, and administrative time savings for hospital review.",
 )
 async def get_hospital_impact_report() -> HospitalImpactReportResponse:
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT count(*) FROM consultations")
     total_enc = cur.fetchone()[0]

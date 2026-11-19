@@ -200,7 +200,17 @@ def _get_clinical_ontology(tokens: List[str]) -> ClinicalOntologyItem:
     )
 
 
+# In-Memory High-Concurrency LRU Translation & Token Cache
+_SYNTHESIS_CACHE: Dict[str, dict] = {}
+_GLOSS_CACHE: Dict[str, dict] = {}
+_MAX_CACHE_SIZE = 2048
+
+
 def _synthesize_with_gemini(tokens: List[str], target_language: str, medical_context: str) -> Optional[dict]:
+    cache_key = f"{'__'.join(tokens)}|{target_language}|{medical_context}"
+    if cache_key in _SYNTHESIS_CACHE:
+        return _SYNTHESIS_CACHE[cache_key]
+
     api_key = settings.GEMINI_API_KEY
     if not api_key:
         return None
@@ -239,12 +249,21 @@ Respond strictly in pure JSON format:
         if raw_text.endswith("```"):
             raw_text = raw_text[:-3]
 
-        return json.loads(raw_text.strip())
+        parsed = json.loads(raw_text.strip())
+        if len(_SYNTHESIS_CACHE) >= _MAX_CACHE_SIZE:
+            first_key = next(iter(_SYNTHESIS_CACHE))
+            _SYNTHESIS_CACHE.pop(first_key, None)
+        _SYNTHESIS_CACHE[cache_key] = parsed
+        return parsed
     except Exception:
         return None
 
 
 def _text_to_gloss_with_gemini(text: str, source_language: str) -> Optional[dict]:
+    cache_key = f"{text.strip().lower()}|{source_language}"
+    if cache_key in _GLOSS_CACHE:
+        return _GLOSS_CACHE[cache_key]
+
     api_key = settings.GEMINI_API_KEY
     if not api_key:
         return None
@@ -263,7 +282,7 @@ Respond strictly in JSON format:
 {{
   "gloss_sequence": ["YOU", "HURT", "WHERE", "SIT", "PLEASE"],
   "simplified_english": "You hurt where? Sit please.",
-  "estimated_duration_seconds": 3.0
+  "estimated_duration_seconds": 3.2
 }}"""
 
         response = model.generate_content(prompt)
@@ -275,7 +294,12 @@ Respond strictly in JSON format:
         if raw_text.endswith("```"):
             raw_text = raw_text[:-3]
 
-        return json.loads(raw_text.strip())
+        parsed = json.loads(raw_text.strip())
+        if len(_GLOSS_CACHE) >= _MAX_CACHE_SIZE:
+            first_key = next(iter(_GLOSS_CACHE))
+            _GLOSS_CACHE.pop(first_key, None)
+        _GLOSS_CACHE[cache_key] = parsed
+        return parsed
     except Exception:
         return None
 

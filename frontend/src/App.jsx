@@ -24,6 +24,8 @@ import HospitalImpactRoi from './components/HospitalImpactRoi';
 import AbhaSmartCardModal from './components/AbhaSmartCardModal';
 import OpdSlipModal from './components/OpdSlipModal';
 import FloatingBilingualCaptions from './components/FloatingBilingualCaptions';
+import ErrorBoundary from './components/ErrorBoundary';
+import OfflineIndicator from './components/OfflineIndicator';
 
 const LANGUAGES = [
   { code: 'en-IN', name: 'English', native: 'English' },
@@ -345,6 +347,9 @@ export default function App() {
         }
       `}</style>
 
+      {/* Edge Offline Detection Banner */}
+      <OfflineIndicator />
+
       {/* SOS Alert Banner */}
       {sosActive && (
         <div style={{ animation: 'pulse-sos 1s infinite', padding: '10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 100, flexShrink: 0 }}>
@@ -494,6 +499,7 @@ export default function App() {
 
         {/* Main Content Area — Golden Cream Glassmorphism Canvas */}
         <main style={{ flex: 1, overflowY: 'auto', padding: '24px', background: 'radial-gradient(ellipse at 15% 15%, rgba(245, 158, 11, 0.08) 0%, transparent 60%), radial-gradient(ellipse at 85% 85%, rgba(180, 83, 9, 0.06) 0%, transparent 60%), linear-gradient(135deg, #FAF6ED 0%, #F5ECE0 50%, #EFE4D4 100%)' }}>
+          <ErrorBoundary onReset={() => setActiveTab('kiosk')}>
 
           {/* TAB 1: DUAL-SCREEN HOSPITAL KIOSK (PHASE 1) */}
           {activeTab === 'kiosk' && (
@@ -656,6 +662,7 @@ export default function App() {
               </div>
             </div>
           )}
+          </ErrorBoundary>
         </main>
       </div>
 
