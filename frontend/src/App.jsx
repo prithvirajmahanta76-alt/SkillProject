@@ -7,12 +7,10 @@ import {
   FileText,
   Hand,
   HeartPulse,
-  Printer,
   RefreshCw,
   ShieldAlert,
   Terminal,
   UserCheck,
-  X,
   XCircle,
 } from 'lucide-react';
 import api from './services/api';
@@ -23,6 +21,9 @@ import BlindAssistant from './components/BlindAssistant';
 import MotorHandsFree from './components/MotorHandsFree';
 import SosGrid from './components/SosGrid';
 import HospitalImpactRoi from './components/HospitalImpactRoi';
+import AbhaSmartCardModal from './components/AbhaSmartCardModal';
+import OpdSlipModal from './components/OpdSlipModal';
+import FloatingBilingualCaptions from './components/FloatingBilingualCaptions';
 
 const LANGUAGES = [
   { code: 'en-IN', name: 'English', native: 'English' },
@@ -320,7 +321,11 @@ export default function App() {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'radial-gradient(ellipse at 15% 15%, rgba(245, 158, 11, 0.1) 0%, transparent 55%), radial-gradient(ellipse at 85% 85%, rgba(180, 83, 9, 0.08) 0%, transparent 55%), linear-gradient(135deg, #FAF6EE 0%, #F5ECE0 50%, #EFE3D3 100%)', color: '#1C1917' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'radial-gradient(ellipse at 15% 15%, rgba(245, 158, 11, 0.1) 0%, transparent 55%), radial-gradient(ellipse at 85% 85%, rgba(180, 83, 9, 0.08) 0%, transparent 55%), linear-gradient(135deg, #FAF6EE 0%, #F5ECE0 50%, #EFE3D3 100%)', color: '#1C1917', position: 'relative' }}>
+      {/* Liquid Aurora Mesh Ambient Floaters */}
+      <div style={{ position: 'fixed', top: '-120px', left: '10%', width: '450px', height: '450px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(245, 158, 11, 0.16) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0, animation: 'floatOrb1 18s ease-in-out infinite' }} />
+      <div style={{ position: 'fixed', bottom: '-80px', right: '5%', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(20, 184, 166, 0.14) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0, animation: 'floatOrb2 22s ease-in-out infinite' }} />
+      <div style={{ position: 'fixed', top: '35%', right: '35%', width: '380px', height: '380px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(217, 119, 6, 0.1) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0, animation: 'floatOrb3 25s ease-in-out infinite' }} />
       <style>{`
         @keyframes pulse-logo {
           0%, 100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.5), 0 0 0 0 rgba(15, 118, 110, 0.3); }
@@ -654,88 +659,23 @@ export default function App() {
         </main>
       </div>
 
-      {/* MODAL 1: OFFICIAL GOVERNMENT ABHA SMART CARD */}
+      {/* FLOATING BILINGUAL CAPTIONS HUD (Feature 3) */}
+      <FloatingBilingualCaptions
+        primaryText={translatedResult}
+        secondaryText={synthesizedText}
+        language={LANGUAGES.find((l) => l.code === selectedLanguage)?.name || 'Hindi'}
+        isPlaying={isPlayingAudio}
+        onReplayAudio={() => handlePlayAudio(translatedResult)}
+      />
+
+      {/* MODAL 1: 3D FLIPPABLE OFFICIAL ABHA SMART CARD (Feature 5) */}
       {showAbhaModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(28, 25, 23, 0.65)', backdropFilter: 'blur(4px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ width: '100%', maxWidth: '580px', backgroundColor: '#FAF8F5', borderRadius: '18px', border: '1px solid #E6DFD5', padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px', boxShadow: '0 25px 50px -12px rgba(45, 35, 20, 0.25)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-green)', fontWeight: 'bold', fontSize: '16px' }}>
-                <CreditCard size={20} /> 🪪 Official ABHA Digital Health Card
-              </div>
-              <button
-                onClick={() => setShowAbhaModal(false)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <iframe
-              src="http://localhost:8000/api/consultation/abha-card/PAT-9842"
-              title="Official ABHA Card"
-              style={{ width: '100%', height: '460px', border: '1px solid var(--border)', borderRadius: '12px', backgroundColor: '#FFFFFF' }}
-            />
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px' }}>
-              <a
-                href="http://localhost:8000/api/consultation/abha-card/PAT-9842"
-                target="_blank"
-                rel="noreferrer"
-                style={{ fontSize: '13px', color: 'var(--accent-cyan)', textDecoration: 'none', fontWeight: 'bold' }}
-              >
-                ➔ Open Fullscreen Card
-              </a>
-              <button
-                onClick={() => setShowAbhaModal(false)}
-                style={{ padding: '8px 18px', borderRadius: '8px', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontWeight: 'bold', cursor: 'pointer' }}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
+        <AbhaSmartCardModal onClose={() => setShowAbhaModal(false)} />
       )}
 
-      {/* MODAL 2: PRINTABLE CIVIL HOSPITAL OPD PRESCRIPTION SLIP */}
+      {/* MODAL 2: BILINGUAL THERMAL OPD CONSULTATION SLIP (Feature 5) */}
       {showOpdModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(28, 25, 23, 0.65)', backdropFilter: 'blur(4px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ width: '100%', maxWidth: '860px', backgroundColor: '#FAF8F5', borderRadius: '18px', border: '1px solid #E6DFD5', padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px', boxShadow: '0 25px 50px -12px rgba(45, 35, 20, 0.25)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-cyan)', fontWeight: 'bold', fontSize: '16px' }}>
-                <FileText size={20} /> 🖨️ Government Civil Hospital • Signed OPD Slip
-              </div>
-              <button
-                onClick={() => setShowOpdModal(false)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <iframe
-              src="http://localhost:8000/api/consultation/slip-html/OPD-CIVIL-1794156577"
-              title="Official OPD Slip"
-              style={{ width: '100%', height: '520px', border: '1px solid var(--border)', borderRadius: '12px', backgroundColor: '#FFFFFF' }}
-            />
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px' }}>
-              <a
-                href="http://localhost:8000/api/consultation/slip-html/OPD-CIVIL-1794156577"
-                target="_blank"
-                rel="noreferrer"
-                style={{ fontSize: '13px', color: 'var(--accent-yellow)', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Printer size={16} /> 🖨️ Print Prescription Slip
-              </a>
-              <button
-                onClick={() => setShowOpdModal(false)}
-                style={{ padding: '8px 18px', borderRadius: '8px', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontWeight: 'bold', cursor: 'pointer' }}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
+        <OpdSlipModal onClose={() => setShowOpdModal(false)} />
       )}
     </div>
   );
