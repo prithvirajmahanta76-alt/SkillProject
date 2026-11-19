@@ -20,12 +20,10 @@ import {
 /**
  * SosGrid
  * Phase 5: 1-Tap SOS Emergency Grid Component
- * - Professional Warm Cream & Golden Aesthetic (WCAG 2.1 AAA Compliant)
- * - Extra-large tactile emergency touch targets (>84px) for tremor & high-stress patients
- * - 8 Clinical Emergency Classifications (Code Blue, Code Red, Trauma, Anaphylaxis)
- * - Multi-Channel Live Dispatch Verification (Nurse Station, SMS Gateway, PA Audio, Strobe)
- * - Bilingual Real-time Hindi + English Hospital Audio Broadcast
- * - 5-Second False Alarm Grace Cancellation Timer
+ * - Emergency Command — Full-Bleed Crimson Alert Grid
+ * - 8 Clinical Emergency Classifications
+ * - Circular SVG countdown timer
+ * - Terminal-style dispatch console
  */
 export default function SosGrid({
   sosActive,
@@ -38,10 +36,12 @@ export default function SosGrid({
 }) {
   const [activeDispatchType, setActiveDispatchType] = useState(null);
   const [cancelCountdown, setCancelCountdown] = useState(null);
+  const [dispatchLines, setDispatchLines] = useState([]);
   const hasAnnouncedRef = useRef(false);
   const cancelTimerRef = useRef(null);
+  const dispatchTimerRef = useRef(null);
 
-  // 8 High-Impact Hospital Emergency Classifications
+  // ICD-10 codes for each card
   const SOS_CARDS = [
     {
       type: 'AMBULANCE',
@@ -49,9 +49,8 @@ export default function SosGrid({
       title: 'Ambulance / Code Red',
       subtitle: 'Cardiac Arrest / Unresponsive / Massive Trauma',
       icon: Ambulance,
-      primaryColor: '#DC2626',
-      bgLight: '#FEF2F2',
-      borderLight: '#FECACA',
+      primaryColor: '#EF4444',
+      icd10: 'I46.9',
       triageLevel: 'ESI-1 Resuscitation',
     },
     {
@@ -60,9 +59,8 @@ export default function SosGrid({
       title: 'Cannot Breathe',
       subtitle: 'Severe Dyspnea / Airway Obstruction / SpO2 < 85%',
       icon: Activity,
-      primaryColor: '#B45309',
-      bgLight: '#FFFBEB',
-      borderLight: '#FDE68A',
+      primaryColor: '#F97316',
+      icd10: 'J96.00',
       triageLevel: 'ESI-1 Airway Crisis',
     },
     {
@@ -71,9 +69,8 @@ export default function SosGrid({
       title: 'Severe 10/10 Pain',
       subtitle: 'Acute Post-Op / Chest Pain / Kidney Colic',
       icon: AlertTriangle,
-      primaryColor: '#D97706',
-      bgLight: '#FFFBEB',
-      borderLight: '#FDE68A',
+      primaryColor: '#FBBF24',
+      icd10: 'R52',
       triageLevel: 'ESI-2 Emergent',
     },
     {
@@ -82,9 +79,8 @@ export default function SosGrid({
       title: 'Doctor Needed STAT',
       subtitle: 'Sudden Patient Deterioration / Arrhythmia',
       icon: Stethoscope,
-      primaryColor: '#0F766E',
-      bgLight: '#F0FDFA',
-      borderLight: '#99F6E4',
+      primaryColor: '#14B8A6',
+      icd10: 'I49.9',
       triageLevel: 'ESI-2 Physician Bedside',
     },
     {
@@ -93,9 +89,8 @@ export default function SosGrid({
       title: 'Fell Down / Lost',
       subtitle: 'Immobilized Patient / Bed or Bathroom Fall',
       icon: HelpCircle,
-      primaryColor: '#7C3AED',
-      bgLight: '#F5F3FF',
-      borderLight: '#DDD6FE',
+      primaryColor: '#A78BFA',
+      icd10: 'W19.XXXA',
       triageLevel: 'ESI-3 Urgent Ortho',
     },
     {
@@ -104,9 +99,8 @@ export default function SosGrid({
       title: 'Allergic Reaction',
       subtitle: 'Throat Swelling / Facial Angioedema / Hives',
       icon: Flame,
-      primaryColor: '#E11D48',
-      bgLight: '#FFF1F2',
-      borderLight: '#FECDD3',
+      primaryColor: '#F43F5E',
+      icd10: 'T78.2XXA',
       triageLevel: 'ESI-1 Anaphylaxis',
     },
     {
@@ -115,9 +109,8 @@ export default function SosGrid({
       title: 'Active Bleed / IV Off',
       subtitle: 'Cannula Dislodgement / Hematoma / Blood Drip',
       icon: BellRing,
-      primaryColor: '#C026D3',
-      bgLight: '#FDF4FF',
-      borderLight: '#F5D0FE',
+      primaryColor: '#E879F9',
+      icd10: 'T82.898A',
       triageLevel: 'ESI-2 Vascular',
     },
     {
@@ -126,9 +119,8 @@ export default function SosGrid({
       title: 'Summon Family / Nurse',
       subtitle: 'Attendant Urgent Presence Needed at Bedside',
       icon: Users,
-      primaryColor: '#15803D',
-      bgLight: '#F0FDF4',
-      borderLight: '#BBF7D0',
+      primaryColor: '#4ADE80',
+      icd10: 'Z76.89',
       triageLevel: 'ESI-4 Non-Critical',
     },
   ];
@@ -137,6 +129,7 @@ export default function SosGrid({
     setActiveDispatchType(type);
     setSosActive(true);
     hasAnnouncedRef.current = false;
+    setDispatchLines([]);
     handleTriggerSOS(type);
 
     // 5-second grace cancellation window
@@ -159,15 +152,39 @@ export default function SosGrid({
     setSosActive(false);
     setSosMessage(null);
     setActiveDispatchType(null);
+    setDispatchLines([]);
   };
 
   const handleManualReset = () => {
     if (cancelTimerRef.current) clearInterval(cancelTimerRef.current);
+    if (dispatchTimerRef.current) clearTimeout(dispatchTimerRef.current);
     setCancelCountdown(null);
     setSosActive(false);
     setSosMessage(null);
     setActiveDispatchType(null);
+    setDispatchLines([]);
   };
+
+  // Sequential dispatch console lines
+  useEffect(() => {
+    if (sosMessage) {
+      const lines = [
+        '> DISPATCH INITIATED...',
+        '> AMBULANCE ALERTED...',
+        '> STAFF NOTIFIED...',
+        '> NURSE STATION ACK: 200 OK',
+        '> CORRIDOR BEACON ACTIVE',
+      ];
+      lines.forEach((line, i) => {
+        dispatchTimerRef.current = setTimeout(() => {
+          setDispatchLines((prev) => [...prev, line]);
+        }, i * 700);
+      });
+    }
+    return () => {
+      if (dispatchTimerRef.current) clearTimeout(dispatchTimerRef.current);
+    };
+  }, [sosMessage]);
 
   // Auto-announce audio once when sosMessage arrives
   useEffect(() => {
@@ -187,512 +204,628 @@ export default function SosGrid({
     }
   }, [sosMessage]);
 
+  // SVG circular countdown ring params
+  const RING_R = 72;
+  const RING_CIRCUMFERENCE = 2 * Math.PI * RING_R;
+  const ringProgress = cancelCountdown !== null ? (cancelCountdown / 5) * RING_CIRCUMFERENCE : RING_CIRCUMFERENCE;
+
+  const activeCard = SOS_CARDS.find((c) => c.type === activeDispatchType);
+
   return (
-    <div
-      style={{
-        backgroundColor: '#FAF6ED',
-        borderRadius: '20px',
-        border: sosActive ? '2px solid #DC2626' : '1.5px solid #E5DECE',
-        padding: '30px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '24px',
-        boxShadow: sosActive ? '0 0 35px rgba(220, 38, 38, 0.25)' : '0 10px 30px rgba(180, 83, 9, 0.05)',
-        transition: 'all 0.3s ease',
-      }}
-    >
-      {/* Top Header Bar */}
+    <div style={{ position: 'relative' }}>
+      <style>{`
+        @keyframes alertBorder {
+          0%, 100% { border-color: rgba(239,68,68,0.3); box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+          50% { border-color: rgba(239,68,68,0.9); box-shadow: 0 0 40px rgba(239,68,68,0.25); }
+        }
+        @keyframes cardAlert {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        @keyframes fadeInLine {
+          from { opacity: 0; transform: translateX(-10px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes sirenSpin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+        @keyframes sirenPulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.15); }
+        }
+        @keyframes ringDash {
+          from { stroke-dashoffset: 0; }
+        }
+        @keyframes cardHoverGlow {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+          50% { box-shadow: 0 0 30px rgba(239,68,68,0.3); }
+        }
+      `}</style>
+
       <div
         style={{
+          background: 'linear-gradient(135deg, #0D0A0A 0%, #1A0A0A 50%, #0D0A0A 100%)',
+          borderRadius: '20px',
+          border: sosActive ? '2px solid rgba(239,68,68,0.9)' : '2px solid rgba(239,68,68,0.3)',
+          padding: '30px',
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px',
-          borderBottom: '1.5px solid #E5DECE',
-          paddingBottom: '20px',
+          flexDirection: 'column',
+          gap: '24px',
+          animation: sosActive ? 'alertBorder 1.5s ease-in-out infinite' : 'none',
+          transition: 'all 0.3s ease',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div
-            style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '14px',
-              backgroundColor: sosActive ? '#FEE2E2' : 'rgba(220, 38, 38, 0.1)',
-              border: `1.5px solid ${sosActive ? '#DC2626' : '#FCA5A5'}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#DC2626',
-            }}
-          >
-            <ShieldAlert size={28} />
-          </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <h2
-                style={{
-                  fontSize: '22px',
-                  fontWeight: '800',
-                  margin: 0,
-                  color: '#1C1917',
-                  letterSpacing: '-0.02em',
-                }}
-              >
-                Phase 5: 1-Tap SOS Emergency Grid
-              </h2>
-              <span
-                style={{
-                  padding: '3px 10px',
-                  borderRadius: '999px',
-                  backgroundColor: sosActive ? '#DC2626' : '#FEF3C7',
-                  color: sosActive ? '#FFFFFF' : '#B45309',
-                  border: `1px solid ${sosActive ? '#B91C1C' : '#FDE68A'}`,
-                  fontSize: '11px',
-                  fontWeight: '800',
-                }}
-              >
-                {sosActive ? '🚨 CODE DISPATCH ACTIVE' : 'STANDBY READY'}
-              </span>
-            </div>
-            <p style={{ fontSize: '13px', color: '#57534E', margin: '4px 0 0' }}>
-              High-visibility tactile triggers (&gt;84px). 1-tap broadcasts bilingual ward audio, sends nurse console telemetry, and notifies attendants.
-            </p>
-          </div>
-        </div>
-
-        {/* Location Beacon Info & Reset Control */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 14px',
-              borderRadius: '10px',
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #E5DECE',
-              fontSize: '12px',
-              fontWeight: '700',
-              color: '#57534E',
-            }}
-          >
-            <MapPin size={15} color="#B45309" /> Civil Hospital: Ward 3, Bed 14 [Floor 2]
-          </div>
-
-          {sosActive && (
-            <button
-              type="button"
-              onClick={handleManualReset}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 16px',
-                borderRadius: '10px',
-                backgroundColor: '#FFFFFF',
-                border: '1.5px solid #DC2626',
-                color: '#DC2626',
-                fontSize: '12px',
-                fontWeight: '800',
-                cursor: 'pointer',
-              }}
-            >
-              <RotateCcw size={15} /> Reset Alarm
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Grace Cancellation Window Banner (If countdown is running) */}
-      {cancelCountdown !== null && (
+        {/* ── Header ── */}
         <div
           style={{
-            padding: '16px 20px',
-            borderRadius: '12px',
-            backgroundColor: '#FEF3C7',
-            border: '1.5px solid #B45309',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '12px',
+            gap: '16px',
+            borderBottom: '1px solid rgba(239,68,68,0.2)',
+            paddingBottom: '20px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Clock size={20} color="#B45309" />
-            <div>
-              <strong style={{ fontSize: '14px', color: '#92400E' }}>
-                Accidental Tap? Grace Cancellation Window: {cancelCountdown}s
-              </strong>
-              <div style={{ fontSize: '12px', color: '#78350F' }}>
-                Full hospital code siren will lock in when timer reaches 0s.
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleCancelGrace}
-            style={{
-              padding: '8px 18px',
-              borderRadius: '8px',
-              backgroundColor: '#B45309',
-              color: '#FFFFFF',
-              border: 'none',
-              fontSize: '13px',
-              fontWeight: '800',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(180, 83, 9, 0.3)',
-            }}
-          >
-            Cancel False Alarm ({cancelCountdown}s)
-          </button>
-        </div>
-      )}
-
-      {/* Extra-Large Emergency Grid (8 Accessible Cards) */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
-          gap: '18px',
-        }}
-      >
-        {SOS_CARDS.map((card) => {
-          const Icon = card.icon;
-          const isSelected = activeDispatchType === card.type;
-          return (
-            <button
-              key={card.type}
-              type="button"
-              onClick={() => onCardClick(card.type)}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* Siren icon */}
+            <div
               style={{
-                backgroundColor: isSelected ? card.bgLight : '#FFFFFF',
-                borderRadius: '18px',
-                padding: '22px',
-                border: isSelected ? `2.5px solid ${card.primaryColor}` : '1.5px solid #E5DECE',
+                width: '54px',
+                height: '54px',
+                borderRadius: '14px',
+                background: 'rgba(239,68,68,0.15)',
+                border: '1.5px solid rgba(239,68,68,0.5)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '16px',
-                textAlign: 'left',
-                boxShadow: isSelected
-                  ? `0 10px 24px ${card.primaryColor}30`
-                  : '0 4px 16px rgba(180, 83, 9, 0.04)',
-                cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                minHeight: '88px',
-                position: 'relative',
-                overflow: 'hidden',
+                justifyContent: 'center',
+                color: '#EF4444',
+                animation: sosActive ? 'sirenPulse 1s ease-in-out infinite' : 'none',
               }}
             >
-              {/* Left Color Accent Bar */}
-              <div
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: '6px',
-                  backgroundColor: card.primaryColor,
-                }}
-              />
+              <ShieldAlert size={30} />
+            </div>
 
-              {/* Icon Container */}
-              <div
-                style={{
-                  width: '62px',
-                  height: '62px',
-                  borderRadius: '14px',
-                  backgroundColor: card.bgLight,
-                  border: `1.5px solid ${card.borderLight}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: card.primaryColor,
-                  flexShrink: 0,
-                }}
-              >
-                <Icon size={32} />
-              </div>
-
-              {/* Card Text & Triage Tag */}
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      fontWeight: '800',
-                      letterSpacing: '0.04em',
-                      color: card.primaryColor,
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    {card.code}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: '700',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      backgroundColor: '#FAF6ED',
-                      color: '#8C857B',
-                      border: '1px solid #E5DECE',
-                    }}
-                  >
-                    {card.triageLevel}
-                  </span>
-                </div>
-
-                <div
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <h2
                   style={{
-                    fontSize: '17px',
+                    fontSize: '22px',
                     fontWeight: '800',
-                    color: '#1C1917',
-                    marginTop: '2px',
+                    margin: 0,
+                    color: '#EF4444',
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
                   }}
                 >
-                  {card.title}
-                </div>
-
-                <div
-                  style={{
-                    fontSize: '12px',
-                    color: '#57534E',
-                    marginTop: '2px',
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {card.subtitle}
-                </div>
+                  🚨 EMERGENCY DISPATCH
+                </h2>
 
                 <span
                   style={{
+                    padding: '4px 12px',
+                    borderRadius: '999px',
+                    background: sosActive ? 'rgba(239,68,68,0.9)' : 'rgba(239,68,68,0.15)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(239,68,68,0.6)',
                     fontSize: '11px',
                     fontWeight: '800',
-                    color: isSelected ? card.primaryColor : '#B45309',
-                    marginTop: '6px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
+                    letterSpacing: '0.08em',
+                    animation: sosActive ? 'sirenPulse 1s ease-in-out infinite' : 'none',
                   }}
                 >
-                  ➔ 1-Tap Urgent Summon
+                  {sosActive ? '● CODE DISPATCH ACTIVE' : '○ STANDBY READY'}
                 </span>
               </div>
-            </button>
-          );
-        })}
-      </div>
 
-      {/* Multi-Channel Emergency Dispatch Feedback Console */}
-      {sosMessage && (
-        <div
-          style={{
-            padding: '26px',
-            borderRadius: '16px',
-            backgroundColor: '#FFFFFF',
-            border: '2px solid #DC2626',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '18px',
-            boxShadow: '0 8px 30px rgba(220, 38, 38, 0.12)',
-          }}
-        >
-          {/* Header */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '12px',
-              borderBottom: '1px solid #FEE2E2',
-              paddingBottom: '14px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '10px',
-                  backgroundColor: '#DC2626',
-                  color: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <BellRing size={22} />
-              </div>
-              <div>
-                <div style={{ fontSize: '18px', fontWeight: '800', color: '#DC2626' }}>
-                  Emergency Broadcast Dispatched: {sosMessage.emergency_type || activeDispatchType}
+              {activeCard && sosActive && (
+                <div
+                  style={{
+                    fontSize: '13px',
+                    color: activeCard.primaryColor,
+                    marginTop: '5px',
+                    fontWeight: '700',
+                    letterSpacing: '0.03em',
+                  }}
+                >
+                  ▶ {activeCard.title} — {activeCard.triageLevel}
                 </div>
-                <div style={{ fontSize: '12px', color: '#57534E' }}>
-                  Protocol: Immediate Ward Triage Code Dispatched | Bedside Beacon Active
-                </div>
-              </div>
+              )}
+
+              {!sosActive && (
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', margin: '4px 0 0' }}>
+                  High-visibility tactile triggers. 1-tap broadcasts bilingual ward audio.
+                </p>
+              )}
             </div>
+          </div>
 
+          {/* Location + Reset */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <div
               style={{
-                padding: '6px 12px',
-                borderRadius: '8px',
-                backgroundColor: '#FEF2F2',
-                border: '1px solid #FECACA',
-                color: '#DC2626',
-                fontSize: '12px',
-                fontWeight: '800',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-              }}
-            >
-              <Radio size={14} /> LIVE WARD ALERT
-            </div>
-          </div>
-
-          {/* Regional Audio PA Broadcast Box */}
-          <div
-            style={{
-              backgroundColor: '#FAF6ED',
-              borderRadius: '12px',
-              padding: '16px',
-              border: '1.5px solid #E5DECE',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '14px',
-            }}
-          >
-            <div style={{ flex: 1, minWidth: '240px' }}>
-              <div style={{ fontSize: '11px', fontWeight: '800', color: '#B45309', textTransform: 'uppercase' }}>
-                Bilingual Hospital PA Announcement (Hindi + English):
-              </div>
-              <div style={{ fontSize: '15px', fontWeight: '700', color: '#1C1917', marginTop: '4px' }}>
-                "{sosMessage.regional_audio_broadcast?.hi || sosMessage.regional_audio_broadcast?.en || 'वार्ड ३, बेड १४ पर आपातकालीन चिकित्सा सहायता आवश्यक है।'}"
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => handlePlayAudio(sosMessage.regional_audio_broadcast?.hi || sosMessage.regional_audio_broadcast?.en)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 18px',
+                padding: '6px 14px',
                 borderRadius: '10px',
-                backgroundColor: isPlayingAudio ? '#DC2626' : '#B45309',
-                color: '#FFFFFF',
-                border: 'none',
-                fontSize: '13px',
-                fontWeight: '800',
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              }}
-            >
-              <Volume2 size={16} />
-              {isPlayingAudio ? 'Playing Announcement...' : 'Re-announce Audio'}
-            </button>
-          </div>
-
-          {/* 4-Channel Verification Checklist */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '12px',
-              paddingTop: '6px',
-            }}
-          >
-            <div
-              style={{
-                padding: '12px',
-                borderRadius: '10px',
-                backgroundColor: '#F0FDF4',
-                border: '1px solid #BBF7D0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(239,68,68,0.2)',
                 fontSize: '12px',
-                color: '#15803D',
+                fontWeight: '700',
+                color: 'rgba(255,255,255,0.6)',
               }}
             >
-              <CheckCircle2 size={16} color="#15803D" />
-              <div>
-                <strong>Nurse Station Webhook:</strong>
-                <div style={{ fontSize: '11px', color: '#166534' }}>ACK 200 (Console #04)</div>
-              </div>
+              <MapPin size={15} color="#EF4444" /> Civil Hospital: Ward 3, Bed 14 [Floor 2]
             </div>
 
-            <div
-              style={{
-                padding: '12px',
-                borderRadius: '10px',
-                backgroundColor: '#F0FDF4',
-                border: '1px solid #BBF7D0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '12px',
-                color: '#15803D',
-              }}
-            >
-              <CheckCircle2 size={16} color="#15803D" />
-              <div>
-                <strong>Attendant SMS Alert:</strong>
-                <div style={{ fontSize: '11px', color: '#166534' }}>Sent to +91 98***-****1</div>
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: '12px',
-                borderRadius: '10px',
-                backgroundColor: '#F0FDF4',
-                border: '1px solid #BBF7D0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '12px',
-                color: '#15803D',
-              }}
-            >
-              <CheckCircle2 size={16} color="#15803D" />
-              <div>
-                <strong>Corridor Visual Beacon:</strong>
-                <div style={{ fontSize: '11px', color: '#166534' }}>Strobe Amber/Red Flashing</div>
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: '12px',
-                borderRadius: '10px',
-                backgroundColor: '#F0FDF4',
-                border: '1px solid #BBF7D0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '12px',
-                color: '#15803D',
-              }}
-            >
-              <CheckCircle2 size={16} color="#15803D" />
-              <div>
-                <strong>Crash Cart Dispatch:</strong>
-                <div style={{ fontSize: '11px', color: '#166534' }}>En Route to Ward 3</div>
-              </div>
-            </div>
+            {sosActive && (
+              <button
+                type="button"
+                onClick={handleManualReset}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  borderRadius: '10px',
+                  background: 'rgba(239,68,68,0.1)',
+                  border: '1.5px solid #EF4444',
+                  color: '#EF4444',
+                  fontSize: '12px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                }}
+              >
+                <RotateCcw size={15} /> Reset Alarm
+              </button>
+            )}
           </div>
         </div>
-      )}
+
+        {/* ── Grace Period: Circular SVG Countdown ── */}
+        {cancelCountdown !== null && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column',
+              gap: '16px',
+              padding: '20px 0',
+            }}
+          >
+            <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', fontWeight: '700', letterSpacing: '0.08em' }}>
+              <Clock size={14} style={{ verticalAlign: 'middle', marginRight: '6px', color: '#EF4444' }} />
+              ACCIDENTAL TAP? GRACE CANCELLATION WINDOW ACTIVE
+            </div>
+
+            <div style={{ position: 'relative', width: '180px', height: '180px' }}>
+              <svg width="180" height="180" style={{ transform: 'rotate(-90deg)' }}>
+                {/* Background track */}
+                <circle
+                  cx="90"
+                  cy="90"
+                  r={RING_R}
+                  fill="none"
+                  stroke="rgba(239,68,68,0.15)"
+                  strokeWidth="10"
+                />
+                {/* Animated progress ring */}
+                <circle
+                  cx="90"
+                  cy="90"
+                  r={RING_R}
+                  fill="none"
+                  stroke="#EF4444"
+                  strokeWidth="10"
+                  strokeLinecap="round"
+                  strokeDasharray={RING_CIRCUMFERENCE}
+                  strokeDashoffset={RING_CIRCUMFERENCE - ringProgress}
+                  style={{ transition: 'stroke-dashoffset 0.9s linear' }}
+                />
+              </svg>
+
+              {/* Center content */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '52px',
+                    fontWeight: '900',
+                    color: '#EF4444',
+                    lineHeight: 1,
+                    animation: 'sirenPulse 1s ease-in-out infinite',
+                  }}
+                >
+                  {cancelCountdown}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCancelGrace}
+                  style={{
+                    padding: '5px 14px',
+                    borderRadius: '8px',
+                    background: '#EF4444',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  CANCEL
+                </button>
+              </div>
+            </div>
+
+            <div style={{ fontSize: '12px', color: 'rgba(239,68,68,0.7)', textAlign: 'center' }}>
+              Full hospital code siren will lock in when timer reaches 0s.
+            </div>
+          </div>
+        )}
+
+        {/* ── 8 Emergency Triage Cards (4×2 Grid) ── */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '16px',
+          }}
+        >
+          {SOS_CARDS.map((card) => {
+            const Icon = card.icon;
+            const isSelected = activeDispatchType === card.type;
+            return (
+              <button
+                key={card.type}
+                type="button"
+                onClick={() => onCardClick(card.type)}
+                style={{
+                  background: isSelected ? 'rgba(220,0,0,0.25)' : 'rgba(30,0,0,0.6)',
+                  borderRadius: '16px',
+                  padding: '24px',
+                  border: isSelected
+                    ? `2px solid ${card.primaryColor}`
+                    : '1px solid rgba(239,68,68,0.2)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  gap: '12px',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  transition: 'transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease',
+                  animation: isSelected ? 'cardAlert 1.2s ease-in-out infinite' : 'none',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  minHeight: '160px',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.03)';
+                  e.currentTarget.style.borderColor = 'rgba(239,68,68,0.6)';
+                  e.currentTarget.style.boxShadow = '0 0 30px rgba(239,68,68,0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.borderColor = isSelected ? card.primaryColor : 'rgba(239,68,68,0.2)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                {/* Large icon in colored circle */}
+                <div
+                  style={{
+                    width: '56px',
+                    height: '56px',
+                    borderRadius: '50%',
+                    background: `${card.primaryColor}22`,
+                    border: `2px solid ${card.primaryColor}55`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: card.primaryColor,
+                    flexShrink: 0,
+                  }}
+                >
+                  <Icon size={28} />
+                </div>
+
+                {/* Emergency type */}
+                <div>
+                  <div
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      color: card.primaryColor,
+                      letterSpacing: '0.07em',
+                      textTransform: 'uppercase',
+                      marginBottom: '3px',
+                    }}
+                  >
+                    {card.code}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: '800',
+                      color: '#FFFFFF',
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    {card.title}
+                  </div>
+                </div>
+
+                {/* ICD-10 code */}
+                <div
+                  style={{
+                    marginTop: 'auto',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    color: '#EF4444',
+                    fontFamily: 'JetBrains Mono, Consolas, monospace',
+                    letterSpacing: '0.05em',
+                    background: 'rgba(239,68,68,0.08)',
+                    padding: '3px 8px',
+                    borderRadius: '5px',
+                    border: '1px solid rgba(239,68,68,0.2)',
+                  }}
+                >
+                  ICD-10: {card.icd10}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Dispatch Console Terminal ── */}
+        {sosMessage && (
+          <div
+            style={{
+              background: '#000',
+              border: '1px solid rgba(239,68,68,0.5)',
+              borderRadius: '14px',
+              padding: '24px',
+              fontFamily: 'JetBrains Mono, Consolas, monospace',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0',
+            }}
+          >
+            {/* Terminal header bar */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottom: '1px solid rgba(239,68,68,0.3)',
+                paddingBottom: '12px',
+                marginBottom: '16px',
+                flexWrap: 'wrap',
+                gap: '10px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    background: '#EF4444',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    animation: 'sirenPulse 1s ease-in-out infinite',
+                  }}
+                >
+                  <BellRing size={18} />
+                </div>
+                <div>
+                  <div
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: '800',
+                      color: '#EF4444',
+                      fontFamily: 'JetBrains Mono, Consolas, monospace',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    DISPATCH CONSOLE — {sosMessage.emergency_type || activeDispatchType}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
+                    Protocol: Immediate Ward Triage Code | Bedside Beacon Active
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: '6px',
+                  background: 'rgba(239,68,68,0.15)',
+                  border: '1px solid rgba(239,68,68,0.4)',
+                  color: '#EF4444',
+                  fontSize: '11px',
+                  fontWeight: '800',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                <Radio size={13} /> LIVE WARD ALERT
+              </div>
+            </div>
+
+            {/* Terminal output lines */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '130px' }}>
+              {dispatchLines.map((line, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    fontSize: '13px',
+                    color: idx < 3 ? '#4ADE80' : 'rgba(255,255,255,0.6)',
+                    animation: 'fadeInLine 0.4s ease both',
+                    fontFamily: 'JetBrains Mono, Consolas, monospace',
+                  }}
+                >
+                  {idx < 3 ? (
+                    <CheckCircle2 size={15} color="#4ADE80" />
+                  ) : (
+                    <CheckCircle2 size={15} color="rgba(255,255,255,0.4)" />
+                  )}
+                  {line}
+                </div>
+              ))}
+              {/* Blinking cursor */}
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '13px',
+                  color: 'rgba(239,68,68,0.7)',
+                  fontFamily: 'JetBrains Mono, Consolas, monospace',
+                }}
+              >
+                <span
+                  style={{
+                    display: 'inline-block',
+                    width: '10px',
+                    height: '18px',
+                    background: '#EF4444',
+                    animation: 'blink 1s step-start infinite',
+                    verticalAlign: 'middle',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* PA Audio Row */}
+            <div
+              style={{
+                marginTop: '16px',
+                background: 'rgba(239,68,68,0.06)',
+                borderRadius: '10px',
+                padding: '14px 16px',
+                border: '1px solid rgba(239,68,68,0.2)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '12px',
+              }}
+            >
+              <div style={{ flex: 1, minWidth: '240px' }}>
+                <div
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: '800',
+                    color: '#EF4444',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Bilingual Hospital PA Broadcast (Hindi + English):
+                </div>
+                <div
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    color: 'rgba(255,255,255,0.85)',
+                    fontFamily: 'inherit',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  &ldquo;{sosMessage.regional_audio_broadcast?.hi || sosMessage.regional_audio_broadcast?.en || 'वार्ड ३, बेड १४ पर आपातकालीन चिकित्सा सहायता आवश्यक है।'}&rdquo;
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handlePlayAudio(sosMessage.regional_audio_broadcast?.hi || sosMessage.regional_audio_broadcast?.en)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  background: isPlayingAudio ? '#EF4444' : 'rgba(239,68,68,0.2)',
+                  color: '#FFFFFF',
+                  border: '1px solid rgba(239,68,68,0.5)',
+                  fontSize: '13px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  fontFamily: 'JetBrains Mono, Consolas, monospace',
+                  letterSpacing: '0.03em',
+                  transition: 'background 0.2s ease',
+                }}
+              >
+                <Volume2 size={16} />
+                {isPlayingAudio ? 'Playing...' : 'Re-announce Audio'}
+              </button>
+            </div>
+
+            {/* 4-Channel Verification */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '10px',
+                marginTop: '14px',
+              }}
+            >
+              {[
+                { label: 'Nurse Station Webhook', detail: 'ACK 200 (Console #04)' },
+                { label: 'Attendant SMS Alert', detail: 'Sent to +91 98***-****1' },
+                { label: 'Corridor Visual Beacon', detail: 'Strobe Amber/Red Flashing' },
+                { label: 'Crash Cart Dispatch', detail: 'En Route to Ward 3' },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  style={{
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    background: 'rgba(74,222,128,0.07)',
+                    border: '1px solid rgba(74,222,128,0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '12px',
+                    color: '#4ADE80',
+                    fontFamily: 'JetBrains Mono, Consolas, monospace',
+                  }}
+                >
+                  <CheckCircle2 size={14} color="#4ADE80" />
+                  <div>
+                    <div style={{ fontWeight: '700' }}>{item.label}:</div>
+                    <div style={{ fontSize: '11px', color: 'rgba(74,222,128,0.7)' }}>{item.detail}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
