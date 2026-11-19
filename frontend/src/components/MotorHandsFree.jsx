@@ -16,6 +16,7 @@ import {
   Camera,
   VideoOff,
   AlertCircle,
+  Crosshair,
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -93,6 +94,7 @@ export default function MotorHandsFree({
   // Sensitivity: 'high' (ALS micro-gestures) or 'standard'
   const [sensitivity, setSensitivity] = useState('standard');
   const [voiceFeedbackEnabled, setVoiceFeedbackEnabled] = useState(true);
+  const [showLaserReticle, setShowLaserReticle] = useState(true);
   const [lastExecuted, setLastExecuted] = useState(null);
 
   const dwellTimerRef = useRef(null);
@@ -424,6 +426,10 @@ export default function MotorHandsFree({
   const pitchThreshold = sensitivity === 'high' ? 10 : 18;
   const yawThreshold = sensitivity === 'high' ? 14 : 22;
 
+  // Compute laser gaze screen reticle position
+  const reticleX = Math.min(94, Math.max(6, 50 + (yaw / 35) * 44));
+  const reticleY = Math.min(94, Math.max(6, 50 + (pitch / 25) * 40));
+
   return (
     <div
       style={{
@@ -612,8 +618,87 @@ export default function MotorHandsFree({
             <Sliders size={15} />
             Mode: {sensitivity === 'high' ? 'High Sensitivity (ALS)' : 'Standard'}
           </button>
+
+          {/* Touchless Laser Reticle Toggle */}
+          <button
+            type="button"
+            onClick={() => setShowLaserReticle(!showLaserReticle)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '10px',
+              background: showLaserReticle ? 'rgba(15, 118, 110, 0.12)' : 'rgba(255, 255, 255, 0.75)',
+              border: showLaserReticle ? '1.5px solid #0F766E' : '1px solid rgba(217, 180, 130, 0.45)',
+              color: showLaserReticle ? '#0F766E' : '#78716C',
+              fontSize: '12px',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(180, 83, 9, 0.05)',
+            }}
+            title="Toggle floating head-gaze assistive reticle"
+          >
+            <Crosshair size={15} />
+            Reticle: {showLaserReticle ? 'ON' : 'OFF'}
+          </button>
         </div>
       </div>
+
+      {/* Floating Assistive Laser Gaze Reticle */}
+      {showLaserReticle && (
+        <div
+          style={{
+            position: 'absolute',
+            left: `${reticleX}%`,
+            top: `${reticleY}%`,
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none',
+            zIndex: 60,
+            transition: 'left 0.14s ease-out, top 0.14s ease-out',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '50%',
+              border: `2px solid ${dwellProgress > 0 ? '#10B981' : ear < 0.20 ? '#EF4444' : '#D97706'}`,
+              boxShadow: `0 0 25px ${dwellProgress > 0 ? 'rgba(16, 185, 129, 0.7)' : ear < 0.20 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(217, 119, 6, 0.5)'}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              backdropFilter: 'blur(2px)',
+            }}
+          >
+            {/* Concentric reticle rings */}
+            <div
+              style={{
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                border: `1.5px dashed ${dwellProgress > 0 ? '#10B981' : '#D97706'}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <div
+                style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  backgroundColor: dwellProgress > 0 ? '#10B981' : ear < 0.20 ? '#EF4444' : '#B45309',
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {cameraError && (
         <div
