@@ -15,6 +15,8 @@ import {
   Mic,
 } from 'lucide-react';
 import LiveCameraTracker from './LiveCameraTracker';
+import AnatomicalBodyMap from './AnatomicalBodyMap';
+import AudioWaveVisualizer from './AudioWaveVisualizer';
 
 /**
  * HospitalKiosk
@@ -46,6 +48,7 @@ export default function HospitalKiosk({
 }) {
   const [activeClipIndex, setActiveClipIndex] = useState(-1);
   const [isPlayingSequence, setIsPlayingSequence] = useState(false);
+  const [showBodyMap, setShowBodyMap] = useState(false);
 
   // Quick doctor prompts for one-tap clinical inquiries
   const DOCTOR_QUICK_PROMPTS = [
@@ -430,6 +433,20 @@ export default function HospitalKiosk({
             <span style={{ color: '#0F766E', fontWeight: '800' }}>Latency: 28ms</span>
           </div>
 
+          {/* Interactive 3D Anatomical Body Map Dropdown / Panel */}
+          {showBodyMap && (
+            <AnatomicalBodyMap
+              onSelectSymptom={(symptom) => {
+                if (!accumulatedTokens.includes(symptom.token)) {
+                  const nextTokens = [...accumulatedTokens, symptom.token];
+                  setAccumulatedTokens(nextTokens);
+                  handleSynthesizeTokens(nextTokens);
+                }
+              }}
+              onClose={() => setShowBodyMap(false)}
+            />
+          )}
+
           {/* Grammar-Aware ISL Token Assembly */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -437,6 +454,25 @@ export default function HospitalKiosk({
                 Accumulated ISL Tokens ({accumulatedTokens.length}):
               </p>
               <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowBodyMap(!showBodyMap)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 10px',
+                    borderRadius: '8px',
+                    background: showBodyMap ? 'linear-gradient(135deg, #0F766E, #14B8A6)' : 'rgba(15, 118, 110, 0.1)',
+                    border: '1px solid rgba(15, 118, 110, 0.35)',
+                    fontSize: '11px',
+                    color: showBodyMap ? '#FFFFFF' : '#0F766E',
+                    cursor: 'pointer',
+                    fontWeight: '800',
+                  }}
+                >
+                  <Activity size={12} /> {showBodyMap ? 'Hide Body Map' : '🩺 3D Symptom Map'}
+                </button>
                 {accumulatedTokens.length > 0 && (
                   <button
                     type="button"
@@ -874,15 +910,8 @@ export default function HospitalKiosk({
 
               {/* Audio EQ Animation */}
               {isPlayingAudio && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '10px' }}>
-                  <span style={{ fontSize: '11px', color: '#B45309', fontWeight: '700', marginRight: '6px' }}>
-                    Broadcasting Neural Speech:
-                  </span>
-                  <span style={{ width: '3px', backgroundColor: '#B45309', borderRadius: '2px', animation: 'eqDance1 0.5s infinite alternate' }} />
-                  <span style={{ width: '3px', backgroundColor: '#B45309', borderRadius: '2px', animation: 'eqDance2 0.7s infinite alternate' }} />
-                  <span style={{ width: '3px', backgroundColor: '#B45309', borderRadius: '2px', animation: 'eqDance3 0.6s infinite alternate' }} />
-                  <span style={{ width: '3px', backgroundColor: '#B45309', borderRadius: '2px', animation: 'eqDance1 0.8s infinite alternate' }} />
-                  <span style={{ width: '3px', backgroundColor: '#B45309', borderRadius: '2px', animation: 'eqDance2 0.5s infinite alternate' }} />
+                <div style={{ marginTop: '10px' }}>
+                  <AudioWaveVisualizer isActive={isPlayingAudio} label="Broadcasting Neural Speech" mode="output" />
                 </div>
               )}
             </div>

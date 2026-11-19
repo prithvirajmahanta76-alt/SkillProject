@@ -7,7 +7,10 @@ import {
   ArrowRight,
   ArrowLeft,
   Radio,
+  Activity,
 } from 'lucide-react';
+import AnatomicalBodyMap from './AnatomicalBodyMap';
+import AudioWaveVisualizer from './AudioWaveVisualizer';
 
 /**
  * DeafMuteHub
@@ -32,6 +35,7 @@ export default function DeafMuteHub({
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [activePreviewSign, setActivePreviewSign] = useState(null);
   const [lastAddedSign, setLastAddedSign] = useState(null);
+  const [showBodyMap, setShowBodyMap] = useState(false);
 
   // Categorized Medical ISL Dictionary with Gesture Articulation Details
   const VOCABULARY = [
@@ -248,8 +252,44 @@ export default function DeafMuteHub({
               {tmpl.label}
             </button>
           ))}
+
+          {/* 3D Anatomical Body Map Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setShowBodyMap(!showBodyMap)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '10px',
+              background: showBodyMap ? 'linear-gradient(135deg, #0F766E, #14B8A6)' : 'rgba(15, 118, 110, 0.12)',
+              border: '1.5px solid #0F766E',
+              color: showBodyMap ? '#FFFFFF' : '#0F766E',
+              fontSize: '12px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(15, 118, 110, 0.15)',
+            }}
+          >
+            <Activity size={14} /> {showBodyMap ? 'Hide 3D Body Map' : '🩺 3D Human Symptom Map'}
+          </button>
         </div>
       </div>
+
+      {/* Interactive 3D Anatomical Body Map Dropdown / Panel */}
+      {showBodyMap && (
+        <AnatomicalBodyMap
+          onSelectSymptom={(symptom) => {
+            if (!accumulatedTokens.includes(symptom.token)) {
+              const nextTokens = [...accumulatedTokens, symptom.token];
+              setAccumulatedTokens(nextTokens);
+              handleSynthesizeTokens(nextTokens);
+            }
+          }}
+          onClose={() => setShowBodyMap(false)}
+        />
+      )}
 
       {/* Sentence Construction Shelf */}
       <div
@@ -463,16 +503,11 @@ export default function DeafMuteHub({
             >
               <Volume2 size={16} />
               {isPlayingAudio ? 'Stop Voice' : '🔊 Speak for Me'}
-              {/* Waveform animation bars */}
-              {isPlayingAudio && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '3px', marginLeft: '6px' }}>
-                  <span style={{ width: '3px', background: '#FFF', borderRadius: '2px', display: 'inline-block', animation: 'eqWave1 0.5s infinite alternate' }} />
-                  <span style={{ width: '3px', background: '#FFF', borderRadius: '2px', display: 'inline-block', animation: 'eqWave2 0.7s infinite alternate' }} />
-                  <span style={{ width: '3px', background: '#FFF', borderRadius: '2px', display: 'inline-block', animation: 'eqWave3 0.6s infinite alternate' }} />
-                  <span style={{ width: '3px', background: '#FFF', borderRadius: '2px', display: 'inline-block', animation: 'eqWave1 0.8s infinite alternate' }} />
-                </span>
-              )}
             </button>
+          )}
+
+          {isPlayingAudio && (
+            <AudioWaveVisualizer isActive={isPlayingAudio} label="Broadcasting Speech" mode="output" />
           )}
         </div>
 
