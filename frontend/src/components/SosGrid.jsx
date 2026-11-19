@@ -249,15 +249,23 @@ export default function SosGrid({
 
       <div
         style={{
-          background: 'linear-gradient(135deg, #0D0A0A 0%, #1A0A0A 50%, #0D0A0A 100%)',
-          borderRadius: '20px',
-          border: sosActive ? '2px solid rgba(239,68,68,0.9)' : '2px solid rgba(239,68,68,0.3)',
+          background: 'radial-gradient(ellipse at 15% 15%, rgba(239, 68, 68, 0.08) 0%, transparent 55%), radial-gradient(ellipse at 85% 85%, rgba(180, 83, 9, 0.08) 0%, transparent 55%), linear-gradient(135deg, #FAF6EE 0%, #F5ECE0 50%, #EFE3D3 100%)',
+          borderRadius: '24px',
+          border: sosActive ? '2px solid rgba(220, 38, 38, 0.85)' : '1px solid rgba(255, 255, 255, 0.9)',
           padding: '30px',
           display: 'flex',
           flexDirection: 'column',
           gap: '24px',
           animation: sosActive ? 'alertBorder 1.5s ease-in-out infinite' : 'none',
           transition: 'all 0.3s ease',
+          boxShadow: sosActive
+            ? '0 25px 60px -15px rgba(220, 38, 38, 0.2), 0 0 40px rgba(220, 38, 38, 0.15)'
+            : '0 25px 60px -15px rgba(180, 83, 9, 0.08), 0 0 1px 1px rgba(217, 180, 130, 0.25)',
+          backdropFilter: 'blur(24px)',
+          color: '#1C1917',
+          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
         {/* ── Header ── */}
@@ -268,7 +276,7 @@ export default function SosGrid({
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: '16px',
-            borderBottom: '1px solid rgba(239,68,68,0.2)',
+            borderBottom: '1px solid rgba(217, 180, 130, 0.35)',
             paddingBottom: '20px',
           }}
         >
@@ -279,12 +287,13 @@ export default function SosGrid({
                 width: '54px',
                 height: '54px',
                 borderRadius: '14px',
-                background: 'rgba(239,68,68,0.15)',
-                border: '1.5px solid rgba(239,68,68,0.5)',
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1.5px solid rgba(239, 68, 68, 0.4)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#EF4444',
+                color: '#DC2626',
+                boxShadow: '0 8px 20px rgba(220, 38, 38, 0.15)',
                 animation: sosActive ? 'sirenPulse 1s ease-in-out infinite' : 'none',
               }}
             >
@@ -298,7 +307,7 @@ export default function SosGrid({
                     fontSize: '22px',
                     fontWeight: '800',
                     margin: 0,
-                    color: '#EF4444',
+                    color: '#B91C1C',
                     letterSpacing: '0.04em',
                     textTransform: 'uppercase',
                   }}
@@ -310,12 +319,13 @@ export default function SosGrid({
                   style={{
                     padding: '4px 12px',
                     borderRadius: '999px',
-                    background: sosActive ? 'rgba(239,68,68,0.9)' : 'rgba(239,68,68,0.15)',
-                    color: '#FFFFFF',
-                    border: '1px solid rgba(239,68,68,0.6)',
+                    background: sosActive ? 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)' : 'rgba(217, 119, 6, 0.12)',
+                    color: sosActive ? '#FFFFFF' : '#B45309',
+                    border: sosActive ? '1px solid #DC2626' : '1px solid rgba(217, 119, 6, 0.25)',
                     fontSize: '11px',
                     fontWeight: '800',
                     letterSpacing: '0.08em',
+                    boxShadow: sosActive ? '0 4px 14px rgba(220, 38, 38, 0.3)' : 'none',
                     animation: sosActive ? 'sirenPulse 1s ease-in-out infinite' : 'none',
                   }}
                 >
@@ -327,7 +337,7 @@ export default function SosGrid({
                 <div
                   style={{
                     fontSize: '13px',
-                    color: activeCard.primaryColor,
+                    color: '#B91C1C',
                     marginTop: '5px',
                     fontWeight: '700',
                     letterSpacing: '0.03em',
@@ -338,7 +348,7 @@ export default function SosGrid({
               )}
 
               {!sosActive && (
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', margin: '4px 0 0' }}>
+                <p style={{ fontSize: '12px', color: '#57534E', margin: '4px 0 0' }}>
                   High-visibility tactile triggers. 1-tap broadcasts bilingual ward audio.
                 </p>
               )}
@@ -354,14 +364,15 @@ export default function SosGrid({
                 gap: '6px',
                 padding: '6px 14px',
                 borderRadius: '10px',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(239,68,68,0.2)',
+                background: 'rgba(255, 255, 255, 0.75)',
+                border: '1px solid rgba(217, 180, 130, 0.45)',
                 fontSize: '12px',
                 fontWeight: '700',
-                color: 'rgba(255,255,255,0.6)',
+                color: '#57534E',
+                boxShadow: '0 2px 8px rgba(180, 83, 9, 0.04)',
               }}
             >
-              <MapPin size={15} color="#EF4444" /> Civil Hospital: Ward 3, Bed 14 [Floor 2]
+              <MapPin size={15} color="#DC2626" /> Civil Hospital: Ward 3, Bed 14 [Floor 2]
             </div>
 
             {sosActive && (
@@ -374,12 +385,13 @@ export default function SosGrid({
                   gap: '6px',
                   padding: '8px 16px',
                   borderRadius: '10px',
-                  background: 'rgba(239,68,68,0.1)',
-                  border: '1.5px solid #EF4444',
-                  color: '#EF4444',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1.5px solid #DC2626',
+                  color: '#DC2626',
                   fontSize: '12px',
                   fontWeight: '800',
                   cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(220, 38, 38, 0.1)',
                 }}
               >
                 <RotateCcw size={15} /> Reset Alarm
@@ -400,8 +412,8 @@ export default function SosGrid({
               padding: '20px 0',
             }}
           >
-            <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', fontWeight: '700', letterSpacing: '0.08em' }}>
-              <Clock size={14} style={{ verticalAlign: 'middle', marginRight: '6px', color: '#EF4444' }} />
+            <div style={{ color: '#B91C1C', fontSize: '13px', fontWeight: '800', letterSpacing: '0.08em' }}>
+              <Clock size={14} style={{ verticalAlign: 'middle', marginRight: '6px', color: '#DC2626' }} />
               ACCIDENTAL TAP? GRACE CANCELLATION WINDOW ACTIVE
             </div>
 
@@ -413,7 +425,7 @@ export default function SosGrid({
                   cy="90"
                   r={RING_R}
                   fill="none"
-                  stroke="rgba(239,68,68,0.15)"
+                  stroke="rgba(220, 38, 38, 0.15)"
                   strokeWidth="10"
                 />
                 {/* Animated progress ring */}
@@ -422,7 +434,7 @@ export default function SosGrid({
                   cy="90"
                   r={RING_R}
                   fill="none"
-                  stroke="#EF4444"
+                  stroke="#DC2626"
                   strokeWidth="10"
                   strokeLinecap="round"
                   strokeDasharray={RING_CIRCUMFERENCE}
@@ -447,7 +459,7 @@ export default function SosGrid({
                   style={{
                     fontSize: '52px',
                     fontWeight: '900',
-                    color: '#EF4444',
+                    color: '#DC2626',
                     lineHeight: 1,
                     animation: 'sirenPulse 1s ease-in-out infinite',
                   }}
@@ -458,15 +470,16 @@ export default function SosGrid({
                   type="button"
                   onClick={handleCancelGrace}
                   style={{
-                    padding: '5px 14px',
+                    padding: '6px 16px',
                     borderRadius: '8px',
-                    background: '#EF4444',
+                    background: '#DC2626',
                     color: '#FFFFFF',
                     border: 'none',
                     fontSize: '11px',
                     fontWeight: '800',
                     cursor: 'pointer',
                     letterSpacing: '0.05em',
+                    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
                   }}
                 >
                   CANCEL
@@ -474,7 +487,7 @@ export default function SosGrid({
               </div>
             </div>
 
-            <div style={{ fontSize: '12px', color: 'rgba(239,68,68,0.7)', textAlign: 'center' }}>
+            <div style={{ fontSize: '12px', color: '#78716C', textAlign: 'center' }}>
               Full hospital code siren will lock in when timer reaches 0s.
             </div>
           </div>
@@ -484,7 +497,7 @@ export default function SosGrid({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
             gap: '16px',
           }}
         >
@@ -497,12 +510,14 @@ export default function SosGrid({
                 type="button"
                 onClick={() => onCardClick(card.type)}
                 style={{
-                  background: isSelected ? 'rgba(220,0,0,0.25)' : 'rgba(30,0,0,0.6)',
+                  background: isSelected
+                    ? 'linear-gradient(135deg, rgba(254, 242, 242, 0.95) 0%, rgba(254, 226, 226, 0.9) 100%)'
+                    : 'rgba(255, 255, 255, 0.85)',
                   borderRadius: '16px',
-                  padding: '24px',
+                  padding: '22px',
                   border: isSelected
                     ? `2px solid ${card.primaryColor}`
-                    : '1px solid rgba(239,68,68,0.2)',
+                    : '1px solid rgba(217, 180, 130, 0.45)',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'flex-start',
@@ -514,26 +529,27 @@ export default function SosGrid({
                   position: 'relative',
                   overflow: 'hidden',
                   minHeight: '160px',
+                  boxShadow: isSelected ? '0 10px 25px rgba(220, 38, 38, 0.2)' : '0 4px 14px rgba(180, 83, 9, 0.04)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.03)';
-                  e.currentTarget.style.borderColor = 'rgba(239,68,68,0.6)';
-                  e.currentTarget.style.boxShadow = '0 0 30px rgba(239,68,68,0.3)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.borderColor = 'rgba(217, 119, 6, 0.6)';
+                  e.currentTarget.style.boxShadow = '0 10px 24px rgba(180, 83, 9, 0.12)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.borderColor = isSelected ? card.primaryColor : 'rgba(239,68,68,0.2)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.borderColor = isSelected ? card.primaryColor : 'rgba(217, 180, 130, 0.45)';
+                  e.currentTarget.style.boxShadow = isSelected ? '0 10px 25px rgba(220, 38, 38, 0.2)' : '0 4px 14px rgba(180, 83, 9, 0.04)';
                 }}
               >
                 {/* Large icon in colored circle */}
                 <div
                   style={{
-                    width: '56px',
-                    height: '56px',
+                    width: '52px',
+                    height: '52px',
                     borderRadius: '50%',
-                    background: `${card.primaryColor}22`,
-                    border: `2px solid ${card.primaryColor}55`,
+                    background: `${card.primaryColor}18`,
+                    border: `1.5px solid ${card.primaryColor}55`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -541,7 +557,7 @@ export default function SosGrid({
                     flexShrink: 0,
                   }}
                 >
-                  <Icon size={28} />
+                  <Icon size={26} />
                 </div>
 
                 {/* Emergency type */}
@@ -562,7 +578,7 @@ export default function SosGrid({
                     style={{
                       fontSize: '16px',
                       fontWeight: '800',
-                      color: '#FFFFFF',
+                      color: '#1C1917',
                       lineHeight: 1.25,
                     }}
                   >
@@ -576,13 +592,13 @@ export default function SosGrid({
                     marginTop: 'auto',
                     fontSize: '11px',
                     fontWeight: '700',
-                    color: '#EF4444',
+                    color: '#B91C1C',
                     fontFamily: 'JetBrains Mono, Consolas, monospace',
                     letterSpacing: '0.05em',
-                    background: 'rgba(239,68,68,0.08)',
+                    background: 'rgba(239, 68, 68, 0.08)',
                     padding: '3px 8px',
-                    borderRadius: '5px',
-                    border: '1px solid rgba(239,68,68,0.2)',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
                   }}
                 >
                   ICD-10: {card.icd10}
@@ -596,14 +612,15 @@ export default function SosGrid({
         {sosMessage && (
           <div
             style={{
-              background: '#000',
-              border: '1px solid rgba(239,68,68,0.5)',
-              borderRadius: '14px',
+              background: '#1C1917',
+              border: '1px solid rgba(217, 180, 130, 0.4)',
+              borderRadius: '16px',
               padding: '24px',
               fontFamily: 'JetBrains Mono, Consolas, monospace',
               display: 'flex',
               flexDirection: 'column',
               gap: '0',
+              boxShadow: '0 16px 36px rgba(0, 0, 0, 0.25)',
             }}
           >
             {/* Terminal header bar */}
