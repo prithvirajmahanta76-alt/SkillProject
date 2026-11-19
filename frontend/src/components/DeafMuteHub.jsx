@@ -12,7 +12,7 @@ import {
 /**
  * DeafMuteHub
  * Phase 2: Deaf & Mute Gesture Recognition Hub Component
- * - Professional Warm Cream & Golden Tactile Theme (WCAG 2.1 AAA Compliant)
+ * - ISL Sign Language Control Room — Futuristic Hex-Grid Studio Theme
  * - Categorized Medical ISL Vocabulary Palette (22 Clinical Signs)
  * - Interactive Sign Pose Avatar & Hand Joint Visualizer
  * - SOV Grammar Sentence Builder with Reordering & One-Tap Clinical Templates
@@ -110,16 +110,18 @@ export default function DeafMuteHub({
   return (
     <div
       style={{
-        backgroundColor: '#FAF8F5', // Warm Cream Alabaster
+        background: 'linear-gradient(135deg, #060D1A 0%, #0A1226 100%)',
         borderRadius: '20px',
-        border: '1px solid #E6DFD5',
+        border: '1px solid rgba(20,184,166,0.15)',
         padding: '28px',
-        boxShadow: '0 20px 40px -15px rgba(45, 35, 20, 0.08), 0 0 1px 1px rgba(230, 223, 213, 0.6)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(20,184,166,0.08)',
         display: 'flex',
         flexDirection: 'column',
         gap: '24px',
-        color: '#1C1917',
+        color: '#E2E8F0',
         fontFamily: 'system-ui, -apple-system, sans-serif',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
       {/* CSS Keyframe Animations */}
@@ -129,454 +131,592 @@ export default function DeafMuteHub({
           100% { background-position: 200% 0; }
         }
         @keyframes tokenBounce {
-          0% { transform: scale(0.92); opacity: 0; }
-          70% { transform: scale(1.04); }
-          100% { transform: scale(1); opacity: 1; }
+          0% { transform: scale(0.92) translateX(20px); opacity: 0; }
+          70% { transform: scale(1.04) translateX(0); }
+          100% { transform: scale(1) translateX(0); opacity: 1; }
         }
         @keyframes eqWave1 { 0% { height: 4px; } 50% { height: 18px; } 100% { height: 8px; } }
         @keyframes eqWave2 { 0% { height: 16px; } 50% { height: 6px; } 100% { height: 22px; } }
         @keyframes eqWave3 { 0% { height: 8px; } 50% { height: 24px; } 100% { height: 12px; } }
+        @keyframes pulseRing {
+          0% { transform: scale(1); opacity: 0.7; }
+          70% { transform: scale(1.06); opacity: 0; }
+          100% { transform: scale(1.06); opacity: 0; }
+        }
+        @keyframes slideInRight {
+          0% { transform: translateX(30px); opacity: 0; }
+          100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes arrowFlow {
+          0% { opacity: 0.3; transform: translateX(-4px); }
+          50% { opacity: 1; transform: translateX(0); }
+          100% { opacity: 0.3; transform: translateX(-4px); }
+        }
+        @keyframes hexPulse {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
         .btn-shimmer {
-          background: linear-gradient(90deg, #F59E0B 0%, #FDE68A 50%, #F59E0B 100%);
+          background: linear-gradient(90deg, #0F766E 0%, #14B8A6 40%, #B45309 70%, #0F766E 100%);
           background-size: 200% auto;
           animation: shimmerGlow 3s linear infinite;
         }
+        .sign-card-hover:hover {
+          transform: rotateY(8deg) translateZ(10px) scale(1.04) !important;
+          box-shadow: 0 8px 32px rgba(20,184,166,0.2), 0 0 0 1px rgba(20,184,166,0.3) !important;
+        }
       `}</style>
 
-      {/* Header Bar */}
+      {/* Animated Hex Dot-Matrix Background */}
       <div
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '12px',
-          paddingBottom: '16px',
-          borderBottom: '1px solid #E6DFD5',
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: 'radial-gradient(rgba(20,184,166,0.08) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
+          pointerEvents: 'none',
+          zIndex: 0,
         }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div
-            style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '12px',
-              backgroundColor: '#B45309', // Warm Amber/Gold
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#FFF',
-              boxShadow: '0 4px 12px rgba(180, 83, 9, 0.25)',
-            }}
-          >
-            <Hand size={22} />
-          </div>
-          <div>
-            <h2 style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: '#1E293B' }}>
-              Deaf & Mute Gesture Recognition Hub
-            </h2>
-            <p style={{ fontSize: '12px', color: '#64748B', margin: '2px 0 0' }}>
-              Sub-30ms ISL Random Forest Classifier • SOV Linguistic Grammar Bridge • Multilingual Voice
-            </p>
-          </div>
-        </div>
+      />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span
-            style={{
-              padding: '6px 14px',
-              borderRadius: '999px',
-              backgroundColor: '#FEF3C7',
-              color: '#B45309',
-              border: '1px solid #FCD34D',
-              fontSize: '11px',
-              fontWeight: 'bold',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <Radio size={12} className="animate-pulse" />
-            Sub-30ms Edge Inference • {selectedLanguage}
-          </span>
-          <span
-            style={{
-              padding: '6px 12px',
-              borderRadius: '999px',
-              backgroundColor: '#F1EFE9',
-              color: '#475569',
-              border: '1px solid #DCD6CB',
-              fontSize: '11px',
-              fontWeight: '600',
-            }}
-          >
-            WCAG 2.1 AAA Compliant
-          </span>
-        </div>
-      </div>
+      {/* Content wrapper — above hex overlay */}
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-      {/* Rapid 1-Tap Clinical Sentence Templates Bar */}
-      <div>
-        <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748B', display: 'block', marginBottom: '8px' }}>
-          ⚡ 1-Tap Rapid Clinical Templates:
-        </span>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-          {QUICK_TEMPLATES.map((tmpl, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => setAccumulatedTokens(tmpl.tokens)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '8px',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E6DFD5',
-                color: '#1E293B',
-                fontSize: '12px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
-              }}
-            >
-              {tmpl.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Sentence Reconstruction Workbench Card */}
-      <div
-        style={{
-          padding: '24px',
-          borderRadius: '16px',
-          backgroundColor: '#FFFFFF',
-          border: '1px solid #E6DFD5',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-          boxShadow: '0 8px 24px rgba(45, 35, 20, 0.05)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-          <div>
-            <span style={{ fontSize: '14px', fontWeight: '800', color: '#0F766E' }}>
-              📝 Sentence Construction Shelf ({accumulatedTokens.length} Gestures Selected)
-            </span>
-            <span style={{ fontSize: '11px', color: '#64748B', marginLeft: '10px' }}>
-              ISL Grammar Order: Subject ➔ Object ➔ Verb/Action
-            </span>
-          </div>
-
-          {accumulatedTokens.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setAccumulatedTokens([])}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '4px 10px',
-                borderRadius: '6px',
-                backgroundColor: 'transparent',
-                color: '#64748B',
-                border: '1px solid #DCD6CB',
-                fontSize: '11px',
-                cursor: 'pointer',
-              }}
-            >
-              <Trash2 size={12} /> Clear Sentence
-            </button>
-          )}
-        </div>
-
-        {/* Tokens Row with Grammar Roles */}
+        {/* Header Bar */}
         <div
           style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '10px',
-            minHeight: '56px',
-            alignItems: 'center',
-            padding: '12px',
-            borderRadius: '12px',
-            backgroundColor: '#FAF8F5',
-            border: '1px dashed #DCD6CB',
-          }}
-        >
-          {accumulatedTokens.length === 0 ? (
-            <span style={{ fontSize: '13px', color: '#94A3B8', fontStyle: 'italic' }}>
-              Tap any gesture card below or use 1-Tap Clinical Templates above to assemble your statement...
-            </span>
-          ) : (
-            accumulatedTokens.map((token, idx) => {
-              const isSubject = ['I', 'YOU', 'HE', 'SHE'].includes(token);
-              const isPredicate = ['PAIN', 'HURT', 'FEVER', 'HELP', 'BLEEDING'].includes(token);
-              return (
-                <div
-                  key={idx}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 14px',
-                    borderRadius: '8px',
-                    backgroundColor: isPredicate ? '#FEE2E2' : isSubject ? '#FEF3C7' : '#E0F2FE',
-                    color: isPredicate ? '#B91C1C' : isSubject ? '#92400E' : '#0369A1',
-                    border: `1px solid ${isPredicate ? '#FCA5A5' : isSubject ? '#FCD34D' : '#BAE6FD'}`,
-                    fontWeight: 'bold',
-                    fontSize: '13px',
-                    animation: 'tokenBounce 0.3s ease-out',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
-                  }}
-                >
-                  <span style={{ fontSize: '10px', opacity: 0.7 }}>#{idx + 1}</span>
-                  <span>{token}</span>
-
-                  {/* Reorder Left */}
-                  {idx > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => handleMoveToken(idx, -1)}
-                      style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0 }}
-                      title="Move left"
-                    >
-                      <ArrowLeft size={12} />
-                    </button>
-                  )}
-
-                  {/* Reorder Right */}
-                  {idx < accumulatedTokens.length - 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleMoveToken(idx, 1)}
-                      style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0 }}
-                      title="Move right"
-                    >
-                      <ArrowRight size={12} />
-                    </button>
-                  )}
-
-                  {/* Delete */}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveToken(idx)}
-                    style={{ background: 'none', border: 'none', color: '#DC2626', cursor: 'pointer', padding: 0, marginLeft: '2px' }}
-                    title="Remove token"
-                  >
-                    ✕
-                  </button>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* Synthesis Action & Regional Voice Engine */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-          <button
-            type="button"
-            onClick={handleSynthesizeTokens}
-            disabled={isTranslating || accumulatedTokens.length === 0}
-            className={accumulatedTokens.length > 0 ? 'btn-shimmer' : ''}
-            style={{
-              padding: '14px 26px',
-              borderRadius: '12px',
-              backgroundColor: accumulatedTokens.length === 0 ? '#E2E8F0' : '#D97706',
-              color: accumulatedTokens.length === 0 ? '#94A3B8' : '#FFFFFF',
-              fontWeight: '800',
-              fontSize: '15px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              border: 'none',
-              cursor: accumulatedTokens.length === 0 ? 'not-allowed' : 'pointer',
-              boxShadow: accumulatedTokens.length > 0 ? '0 6px 18px rgba(217, 119, 6, 0.3)' : 'none',
-              transition: 'all 0.2s',
-            }}
-          >
-            <Sparkles size={18} />
-            {isTranslating ? 'Synthesizing with Gemini 1.5 Medical Bridge...' : '🗣️ Speak for Me (Gemini Bridge)'}
-          </button>
-
-          {translatedResult && (
-            <button
-              type="button"
-              onClick={() => handlePlayAudio(translatedResult)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 20px',
-                borderRadius: '10px',
-                backgroundColor: isPlayingAudio ? '#DC2626' : '#0F766E',
-                color: '#FFF',
-                fontSize: '13px',
-                fontWeight: '800',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(15, 118, 110, 0.25)',
-              }}
-            >
-              <Volume2 size={16} />
-              {isPlayingAudio ? 'Stop Neural Audio' : '🔊 Hear in Regional Voice (Edge-TTS)'}
-            </button>
-          )}
-        </div>
-
-        {/* Translation Preview Box */}
-        {translatedResult && (
-          <div
-            style={{
-              padding: '18px',
-              borderRadius: '12px',
-              backgroundColor: '#FAF8F5',
-              border: '1px solid #E6DFD5',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '6px',
-            }}
-          >
-            <div style={{ fontSize: '11px', textTransform: 'uppercase', color: '#64748B', fontWeight: 'bold' }}>
-              Synthesized Patient Statement (English): "{synthesizedText}"
-            </div>
-            <div style={{ fontSize: '18px', fontWeight: '800', color: '#B45309' }}>
-              {translatedResult}
-            </div>
-
-            {/* Equalizer Visualizer */}
-            {isPlayingAudio && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px' }}>
-                <span style={{ fontSize: '11px', color: '#0F766E', fontWeight: 'bold', marginRight: '6px' }}>
-                  Broadcasting Neural Voice:
-                </span>
-                <span style={{ width: '4px', backgroundColor: '#0F766E', borderRadius: '2px', animation: 'eqWave1 0.5s infinite alternate' }} />
-                <span style={{ width: '4px', backgroundColor: '#0F766E', borderRadius: '2px', animation: 'eqWave2 0.7s infinite alternate' }} />
-                <span style={{ width: '4px', backgroundColor: '#0F766E', borderRadius: '2px', animation: 'eqWave3 0.6s infinite alternate' }} />
-                <span style={{ width: '4px', backgroundColor: '#0F766E', borderRadius: '2px', animation: 'eqWave1 0.8s infinite alternate' }} />
-                <span style={{ width: '4px', backgroundColor: '#0F766E', borderRadius: '2px', animation: 'eqWave2 0.5s infinite alternate' }} />
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Selected Gesture Pose Articulation Inspector */}
-      {activePreviewSign && (
-        <div
-          style={{
-            padding: '14px 18px',
-            borderRadius: '12px',
-            backgroundColor: '#F0FDFA',
-            border: '1px solid #99F6E4',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '8px',
+            gap: '12px',
+            paddingBottom: '18px',
+            borderBottom: '1px solid rgba(20,184,166,0.15)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '24px' }}>{activePreviewSign.icon}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '14px',
+                background: 'linear-gradient(135deg, #0F766E, #14B8A6)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#FFF',
+                boxShadow: '0 0 20px rgba(20,184,166,0.4)',
+              }}
+            >
+              <Hand size={24} />
+            </div>
             <div>
-              <div style={{ fontSize: '14px', fontWeight: '800', color: '#0F766E' }}>
-                ISL Articulation: {activePreviewSign.sign} ({activePreviewSign.label})
-              </div>
-              <div style={{ fontSize: '12px', color: '#475569' }}>
-                ✋ <strong>Joint Motion Pose:</strong> {activePreviewSign.pose}
-              </div>
+              <h2 style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: '#F0FDFA', letterSpacing: '-0.3px' }}>
+                ISL Gesture Control Room
+              </h2>
+              <p style={{ fontSize: '12px', color: 'rgba(148,163,184,0.8)', margin: '3px 0 0', fontFamily: 'monospace' }}>
+                Sub-30ms ISL Random Forest Classifier • SOV Linguistic Grammar Bridge • Multilingual Voice
+              </p>
             </div>
           </div>
-          <span style={{ fontSize: '11px', color: '#0D9488', fontWeight: 'bold' }}>
-            MediaPipe Keypoints Confirmed
-          </span>
-        </div>
-      )}
 
-      {/* Category Filter Pills */}
-      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-        {CATEGORIES.map((cat) => {
-          const isActive = selectedCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => setSelectedCategory(cat.id)}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span
               style={{
-                padding: '8px 16px',
-                borderRadius: '8px',
-                backgroundColor: isActive ? '#B45309' : '#FFFFFF',
-                color: isActive ? '#FFFFFF' : '#57534E',
-                fontWeight: isActive ? 'bold' : '600',
-                border: `1px solid ${isActive ? '#B45309' : '#E6DFD5'}`,
-                fontSize: '13px',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.15s',
-                boxShadow: isActive ? '0 4px 12px rgba(180, 83, 9, 0.25)' : 'none',
+                padding: '6px 14px',
+                borderRadius: '999px',
+                background: 'rgba(20,184,166,0.1)',
+                color: '#14B8A6',
+                border: '1px solid rgba(20,184,166,0.3)',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontFamily: 'monospace',
               }}
             >
-              {cat.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Vocabulary Gesture Card Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '14px',
-        }}
-      >
-        {filteredVocab.map((item) => {
-          const isJustAdded = lastAddedSign === item.sign;
-          return (
-            <button
-              key={item.sign}
-              type="button"
-              onClick={() => handleAddToken(item.sign)}
-              onMouseEnter={() => setActivePreviewSign(item)}
-              className="touch-target-lg"
+              <Radio size={12} style={{ animation: 'hexPulse 1.5s ease-in-out infinite' }} />
+              Sub-30ms Edge • {selectedLanguage}
+            </span>
+            <span
               style={{
-                backgroundColor: isJustAdded ? '#FEF3C7' : '#FFFFFF',
-                border: `1px solid ${isJustAdded ? '#B45309' : '#E6DFD5'}`,
-                borderRadius: '14px',
-                padding: '18px',
+                padding: '6px 12px',
+                borderRadius: '999px',
+                background: 'rgba(180,83,9,0.1)',
+                color: '#F59E0B',
+                border: '1px solid rgba(245,158,11,0.25)',
+                fontSize: '11px',
+                fontWeight: '600',
+              }}
+            >
+              WCAG 2.1 AAA
+            </span>
+          </div>
+        </div>
+
+        {/* Rapid 1-Tap Clinical Sentence Templates Bar */}
+        <div>
+          <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'rgba(148,163,184,0.7)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'monospace' }}>
+            ⚡ 1-Tap Rapid Clinical Templates:
+          </span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {QUICK_TEMPLATES.map((tmpl, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setAccumulatedTokens(tmpl.tokens)}
+                style={{
+                  padding: '7px 14px',
+                  borderRadius: '8px',
+                  background: 'rgba(15,118,110,0.12)',
+                  border: '1px solid rgba(20,184,166,0.25)',
+                  color: '#94E4DC',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {tmpl.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Sentence Construction / Token Accumulator Workbench */}
+        <div
+          style={{
+            padding: '22px',
+            borderRadius: '16px',
+            background: 'rgba(10,18,38,0.7)',
+            border: '1px solid rgba(20,184,166,0.15)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            boxShadow: 'inset 0 1px 0 rgba(20,184,166,0.07)',
+          }}
+        >
+          {/* Header row */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div>
+              <span style={{ fontSize: '13px', fontWeight: '800', color: '#14B8A6', fontFamily: 'monospace' }}>
+                📝 Sentence Construction Shelf ({accumulatedTokens.length} Gestures Selected)
+              </span>
+              <span style={{ fontSize: '11px', color: 'rgba(148,163,184,0.6)', marginLeft: '10px' }}>
+                ISL Grammar Order: Subject ➔ Object ➔ Verb/Action
+              </span>
+            </div>
+
+            {accumulatedTokens.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setAccumulatedTokens([])}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '5px 11px',
+                  borderRadius: '6px',
+                  background: 'rgba(220,38,38,0.1)',
+                  color: '#FC8181',
+                  border: '1px solid rgba(220,38,38,0.25)',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                }}
+              >
+                <Trash2 size={12} /> Clear Sentence
+              </button>
+            )}
+          </div>
+
+          {/* SOV Grammar Builder — cinema ticker */}
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '10px',
+              minHeight: '60px',
+              alignItems: 'center',
+              padding: '12px 14px',
+              borderRadius: '12px',
+              background: 'rgba(6,13,26,0.6)',
+              border: '1px dashed rgba(20,184,166,0.2)',
+              overflowX: 'auto',
+            }}
+          >
+            {accumulatedTokens.length === 0 ? (
+              <span style={{ fontSize: '13px', color: 'rgba(148,163,184,0.4)', fontStyle: 'italic', fontFamily: 'monospace' }}>
+                Tap any gesture card below or use 1-Tap Clinical Templates above to assemble your statement...
+              </span>
+            ) : (
+              accumulatedTokens.map((token, idx) => {
+                const isSubject = ['I', 'YOU', 'HE', 'SHE'].includes(token);
+                const isPredicate = ['PAIN', 'HURT', 'FEVER', 'HELP', 'BLEEDING'].includes(token);
+                return (
+                  <div
+                    key={idx}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 14px',
+                      borderRadius: '8px',
+                      background: isPredicate
+                        ? 'rgba(220,38,38,0.12)'
+                        : isSubject
+                        ? 'rgba(180,83,9,0.15)'
+                        : 'rgba(15,118,110,0.2)',
+                      color: isPredicate ? '#FC8181' : isSubject ? '#F59E0B' : '#14B8A6',
+                      border: `1px solid ${isPredicate ? 'rgba(220,38,38,0.3)' : isSubject ? 'rgba(245,158,11,0.35)' : 'rgba(20,184,166,0.4)'}`,
+                      fontWeight: 'bold',
+                      fontSize: '13px',
+                      fontFamily: 'monospace',
+                      animation: 'slideInRight 0.3s ease-out',
+                      boxShadow: isPredicate
+                        ? '0 0 10px rgba(220,38,38,0.1)'
+                        : isSubject
+                        ? '0 0 10px rgba(245,158,11,0.15)'
+                        : '0 0 10px rgba(20,184,166,0.1)',
+                    }}
+                  >
+                    <span style={{ fontSize: '10px', opacity: 0.5 }}>#{idx + 1}</span>
+                    <span>{token}</span>
+
+                    {/* Reorder Left */}
+                    {idx > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => handleMoveToken(idx, -1)}
+                        style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, opacity: 0.7 }}
+                        title="Move left"
+                      >
+                        <ArrowLeft size={12} />
+                      </button>
+                    )}
+
+                    {/* Reorder Right */}
+                    {idx < accumulatedTokens.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleMoveToken(idx, 1)}
+                        style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, opacity: 0.7 }}
+                        title="Move right"
+                      >
+                        <ArrowRight size={12} />
+                      </button>
+                    )}
+
+                    {/* Delete */}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveToken(idx)}
+                      style={{ background: 'none', border: 'none', color: '#FC8181', cursor: 'pointer', padding: 0, marginLeft: '2px', opacity: 0.8 }}
+                      title="Remove token"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* SOV Grammar Timeline Connector */}
+          {accumulatedTokens.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '4px' }}>
+              {['S — Subject', 'O — Object', 'V — Verb'].map((label, i) => (
+                <React.Fragment key={label}>
+                  <span
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      background: 'rgba(180,83,9,0.15)',
+                      border: '1px solid rgba(245,158,11,0.25)',
+                      color: '#F59E0B',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    {label}
+                  </span>
+                  {i < 2 && (
+                    <span style={{ color: '#14B8A6', fontSize: '14px', animation: 'arrowFlow 1.5s ease-in-out infinite', animationDelay: `${i * 0.3}s` }}>
+                      →
+                    </span>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+
+          {/* Grammar Synthesize CTA */}
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            {/* Pulsing ring behind button */}
+            {accumulatedTokens.length > 0 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '240px',
+                  height: '52px',
+                  borderRadius: '14px',
+                  border: '2px solid rgba(20,184,166,0.5)',
+                  animation: 'pulseRing 2s ease-out infinite',
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
+            <button
+              type="button"
+              onClick={handleSynthesizeTokens}
+              disabled={isTranslating || accumulatedTokens.length === 0}
+              className={accumulatedTokens.length > 0 ? 'btn-shimmer' : ''}
+              style={{
+                padding: '14px 28px',
+                borderRadius: '12px',
+                background: accumulatedTokens.length === 0
+                  ? 'rgba(30,41,59,0.6)'
+                  : 'linear-gradient(135deg, #0F766E, #B45309)',
+                color: accumulatedTokens.length === 0 ? 'rgba(148,163,184,0.5)' : '#FFFFFF',
+                fontWeight: '800',
+                fontSize: '15px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                border: 'none',
+                cursor: accumulatedTokens.length === 0 ? 'not-allowed' : 'pointer',
+                boxShadow: accumulatedTokens.length > 0 ? '0 6px 24px rgba(15,118,110,0.35)' : 'none',
+                transition: 'all 0.2s',
+                position: 'relative',
+                zIndex: 1,
+              }}
+            >
+              <Sparkles size={18} />
+              {isTranslating ? 'Synthesizing with Gemini 1.5 Medical Bridge...' : '⚡ Synthesize Clinical Sentence'}
+            </button>
+
+            {translatedResult && (
+              <button
+                type="button"
+                onClick={() => handlePlayAudio(translatedResult)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '14px 22px',
+                  borderRadius: '999px',
+                  background: isPlayingAudio
+                    ? 'rgba(220,38,38,0.2)'
+                    : 'rgba(15,118,110,0.2)',
+                  color: isPlayingAudio ? '#FC8181' : '#14B8A6',
+                  border: `1px solid ${isPlayingAudio ? 'rgba(220,38,38,0.4)' : 'rgba(20,184,166,0.4)'}`,
+                  fontSize: '13px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                }}
+              >
+                <Volume2 size={16} />
+                {isPlayingAudio ? 'Stop Neural Audio' : '🔊 Speak for Me'}
+                {/* Waveform animation bars inside */}
+                {isPlayingAudio && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: '4px' }}>
+                    <span style={{ width: '3px', background: '#FC8181', borderRadius: '2px', display: 'inline-block', animation: 'eqWave1 0.5s infinite alternate' }} />
+                    <span style={{ width: '3px', background: '#FC8181', borderRadius: '2px', display: 'inline-block', animation: 'eqWave2 0.7s infinite alternate' }} />
+                    <span style={{ width: '3px', background: '#FC8181', borderRadius: '2px', display: 'inline-block', animation: 'eqWave3 0.6s infinite alternate' }} />
+                    <span style={{ width: '3px', background: '#FC8181', borderRadius: '2px', display: 'inline-block', animation: 'eqWave1 0.8s infinite alternate' }} />
+                    <span style={{ width: '3px', background: '#FC8181', borderRadius: '2px', display: 'inline-block', animation: 'eqWave2 0.5s infinite alternate' }} />
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Translation Output Card */}
+          {translatedResult && (
+            <div
+              style={{
+                padding: '18px 20px',
+                borderRadius: '12px',
+                background: 'rgba(6,13,26,0.8)',
+                border: '1px solid rgba(20,184,166,0.15)',
+                borderLeft: '4px solid #14B8A6',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '8px',
-                textAlign: 'left',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-                transform: isJustAdded ? 'scale(1.03)' : 'none',
-                boxShadow: '0 4px 12px rgba(45, 35, 20, 0.04)',
+                gap: '6px',
+                boxShadow: 'inset 0 1px 0 rgba(20,184,166,0.05)',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '26px' }}>{item.icon}</span>
-                <span
-                  style={{
-                    fontSize: '10px',
-                    padding: '3px 7px',
-                    borderRadius: '4px',
-                    backgroundColor: item.urgency === 'critical' ? '#FEE2E2' : '#F0FDFA',
-                    color: item.urgency === 'critical' ? '#B91C1C' : '#0F766E',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  {item.category}
-                </span>
+              <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'rgba(148,163,184,0.5)', fontWeight: 'bold', fontFamily: 'monospace', letterSpacing: '0.08em' }}>
+                Synthesized Patient Statement (English): &quot;{synthesizedText}&quot;
               </div>
-              <div style={{ fontSize: '16px', fontWeight: '800', color: '#1E293B' }}>
-                {item.sign}
+              <div style={{ fontSize: '18px', fontWeight: '800', color: '#F59E0B' }}>
+                {translatedResult}
               </div>
-              <div style={{ fontSize: '12px', color: '#64748B' }}>
-                {item.label}
+
+              {/* Equalizer Visualizer */}
+              {isPlayingAudio && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#14B8A6', fontWeight: 'bold', marginRight: '6px', fontFamily: 'monospace' }}>
+                    Broadcasting Neural Voice:
+                  </span>
+                  <span style={{ width: '4px', backgroundColor: '#14B8A6', borderRadius: '2px', display: 'inline-block', animation: 'eqWave1 0.5s infinite alternate' }} />
+                  <span style={{ width: '4px', backgroundColor: '#14B8A6', borderRadius: '2px', display: 'inline-block', animation: 'eqWave2 0.7s infinite alternate' }} />
+                  <span style={{ width: '4px', backgroundColor: '#14B8A6', borderRadius: '2px', display: 'inline-block', animation: 'eqWave3 0.6s infinite alternate' }} />
+                  <span style={{ width: '4px', backgroundColor: '#14B8A6', borderRadius: '2px', display: 'inline-block', animation: 'eqWave1 0.8s infinite alternate' }} />
+                  <span style={{ width: '4px', backgroundColor: '#14B8A6', borderRadius: '2px', display: 'inline-block', animation: 'eqWave2 0.5s infinite alternate' }} />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Selected Gesture Pose Articulation Inspector */}
+        {activePreviewSign && (
+          <div
+            style={{
+              padding: '14px 18px',
+              borderRadius: '12px',
+              background: 'rgba(15,118,110,0.08)',
+              border: '1px solid rgba(20,184,166,0.25)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '8px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '28px' }}>{activePreviewSign.icon}</span>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: '800', color: '#14B8A6', fontFamily: 'monospace' }}>
+                  ISL Articulation: {activePreviewSign.sign} ({activePreviewSign.label})
+                </div>
+                <div style={{ fontSize: '12px', color: 'rgba(148,163,184,0.7)' }}>
+                  ✋ <strong style={{ color: 'rgba(148,163,184,0.9)' }}>Joint Motion Pose:</strong> {activePreviewSign.pose}
+                </div>
               </div>
-            </button>
-          );
-        })}
+            </div>
+            <span style={{ fontSize: '11px', color: '#14B8A6', fontWeight: 'bold', fontFamily: 'monospace', background: 'rgba(20,184,166,0.08)', padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(20,184,166,0.2)' }}>
+              MediaPipe Keypoints Confirmed
+            </span>
+          </div>
+        )}
+
+        {/* Category Filter Pills */}
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {CATEGORIES.map((cat) => {
+            const isActive = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setSelectedCategory(cat.id)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  background: isActive
+                    ? 'linear-gradient(135deg, rgba(180,83,9,0.4), rgba(245,158,11,0.2))'
+                    : 'rgba(10,18,38,0.5)',
+                  color: isActive ? '#F59E0B' : 'rgba(148,163,184,0.7)',
+                  fontWeight: isActive ? 'bold' : '600',
+                  border: `1px solid ${isActive ? 'rgba(245,158,11,0.4)' : 'rgba(20,184,166,0.1)'}`,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.15s',
+                  boxShadow: isActive ? '0 4px 12px rgba(245,158,11,0.15)' : 'none',
+                  fontFamily: 'monospace',
+                }}
+              >
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 3D Perspective Sign Card Grid */}
+        <div
+          style={{
+            perspective: '1000px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '14px',
+          }}
+        >
+          {filteredVocab.map((item) => {
+            const isJustAdded = lastAddedSign === item.sign;
+            const isSelected = accumulatedTokens.includes(item.sign);
+            return (
+              <button
+                key={item.sign}
+                type="button"
+                onClick={() => handleAddToken(item.sign)}
+                onMouseEnter={() => setActivePreviewSign(item)}
+                className="sign-card-hover touch-target-lg"
+                style={{
+                  background: isJustAdded
+                    ? 'rgba(245,158,11,0.1)'
+                    : 'rgba(10,18,38,0.7)',
+                  border: `1px solid ${isJustAdded ? 'rgba(245,158,11,0.5)' : isSelected ? 'rgba(245,158,11,0.3)' : 'rgba(20,184,166,0.15)'}`,
+                  borderRadius: '14px',
+                  padding: '18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  transform: isJustAdded ? 'rotateY(4deg) scale(1.04)' : 'rotateY(0deg)',
+                  boxShadow: isSelected
+                    ? '0 0 20px rgba(245,158,11,0.5), inset 0 0 10px rgba(245,158,11,0.1)'
+                    : isJustAdded
+                    ? '0 0 20px rgba(245,158,11,0.3)'
+                    : '0 4px 16px rgba(0,0,0,0.3)',
+                  backdropFilter: 'blur(8px)',
+                  transformStyle: 'preserve-3d',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '40px', lineHeight: 1 }}>{item.icon}</span>
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      padding: '3px 7px',
+                      borderRadius: '4px',
+                      background: item.urgency === 'critical'
+                        ? 'rgba(220,38,38,0.15)'
+                        : item.urgency === 'high'
+                        ? 'rgba(245,158,11,0.12)'
+                        : 'rgba(15,118,110,0.15)',
+                      color: item.urgency === 'critical'
+                        ? '#FC8181'
+                        : item.urgency === 'high'
+                        ? '#F59E0B'
+                        : '#14B8A6',
+                      border: `1px solid ${item.urgency === 'critical' ? 'rgba(220,38,38,0.3)' : item.urgency === 'high' ? 'rgba(245,158,11,0.3)' : 'rgba(20,184,166,0.2)'}`,
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {item.category}
+                  </span>
+                </div>
+                <div style={{ fontSize: '15px', fontWeight: '800', color: '#F0FDFA', letterSpacing: '0.03em' }}>
+                  {item.sign}
+                </div>
+                <div style={{ fontSize: '11px', color: '#14B8A6', fontFamily: 'monospace' }}>
+                  {item.label}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
       </div>
     </div>
   );
