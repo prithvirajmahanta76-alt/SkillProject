@@ -150,6 +150,10 @@ async def root():
             "Regional Speech & Sign Sequencer (/api/speech)",
             "Instant 1-Tap SOS Emergency Grid (/api/emergency)",
             "Clinical Consultation & ABDM Health Records (/api/consultation)",
+            "Ambient Clinical Scribe & Hallucination Firewall (/api/scribe)",
+            "Stroke Rehabilitation & Biomechanical Twin (/api/rehab)",
+            "Medico-Legal & Civic Rights Desk (/api/civic)",
+            "Tactical Disaster Mesh & START Triage Node (/api/disaster)",
         ],
     }
 

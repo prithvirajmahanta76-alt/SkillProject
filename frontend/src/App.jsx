@@ -7,8 +7,11 @@ import {
   FileText,
   Hand,
   HeartPulse,
+  Radio,
   RefreshCw,
+  Scale,
   ShieldAlert,
+  Stethoscope,
   Terminal,
   UserCheck,
   XCircle,
@@ -26,6 +29,10 @@ import OpdSlipModal from './components/OpdSlipModal';
 import FloatingBilingualCaptions from './components/FloatingBilingualCaptions';
 import ErrorBoundary from './components/ErrorBoundary';
 import OfflineIndicator from './components/OfflineIndicator';
+import AmbientScribe from './components/AmbientScribe';
+import RehabDigitalTwin from './components/RehabDigitalTwin';
+import CivicLegalDesk from './components/CivicLegalDesk';
+import TacticalMeshTriage from './components/TacticalMeshTriage';
 
 const LANGUAGES = [
   { code: 'en-IN', name: 'English', native: 'English' },
@@ -288,6 +295,14 @@ export default function App() {
         data = await api.getEmergencyPhrases();
       } else if (testEndpoint === 'trigger_sos') {
         data = await api.triggerSOS('AMBULANCE');
+      } else if (testEndpoint === 'scribe_audit') {
+        data = await api.transcribeAndAuditConsultation();
+      } else if (testEndpoint === 'rehab_exercises') {
+        data = await api.getRehabExercises();
+      } else if (testEndpoint === 'civic_grievance') {
+        data = await api.analyzeGrievance('अस्पताल ने आयुष्मान कार्ड से मना किया');
+      } else if (testEndpoint === 'disaster_mesh') {
+        data = await api.getMeshNodes();
       }
       setApiResponseJson(data);
     } catch (err) {
@@ -314,6 +329,10 @@ export default function App() {
 
   const TABS = [
     { id: 'kiosk', label: 'Hospital Kiosk', emoji: '🏥', icon: Activity },
+    { id: 'scribe', label: 'Ambient Scribe', emoji: '🎙️', icon: Stethoscope },
+    { id: 'rehab', label: 'Rehab Twin', emoji: '🦿', icon: HeartPulse },
+    { id: 'civic', label: 'Civic Rights', emoji: '⚖️', icon: Scale },
+    { id: 'disaster', label: 'Disaster Mesh', emoji: '🛰️', icon: Radio },
     { id: 'deaf_hub', label: 'Deaf & Mute Hub', emoji: '🧏', icon: Hand },
     { id: 'blind_mode', label: 'Blind Assistant', emoji: '🦯', icon: Eye },
     { id: 'motor_mode', label: 'Motor Hands-Free', emoji: '♿', icon: UserCheck },
@@ -526,6 +545,29 @@ export default function App() {
             />
           )}
 
+          {/* WING 2: AMBIENT CLINICAL SCRIBE & FRAUD FIREWALL (SILENT AUDIT) */}
+          {activeTab === 'scribe' && (
+            <AmbientScribe
+              isPlayingAudio={isPlayingAudio}
+              handlePlayAudio={handlePlayAudio}
+            />
+          )}
+
+          {/* WING 3: PHYSICAL THERAPY & STROKE REHAB DIGITAL TWIN (NEUROGAIT) */}
+          {activeTab === 'rehab' && (
+            <RehabDigitalTwin handlePlayAudio={handlePlayAudio} />
+          )}
+
+          {/* WING 4: MEDICO-LEGAL, AYUSHMAN & DISABILITY RIGHTS DESK (JAN NYAYA) */}
+          {activeTab === 'civic' && (
+            <CivicLegalDesk />
+          )}
+
+          {/* WING 5: TACTICAL DISASTER & OFFLINE MESH TRIAGE (DISASTER MESH) */}
+          {activeTab === 'disaster' && (
+            <TacticalMeshTriage />
+          )}
+
           {/* TAB 2: DEAF & MUTE HUB (PHASE 2) */}
           {activeTab === 'deaf_hub' && (
             <DeafMuteHub
@@ -610,6 +652,10 @@ export default function App() {
                   { id: 'speech_tts', label: 'POST /speech/tts' },
                   { id: 'emergency_phrases', label: 'GET /emergency/phrases' },
                   { id: 'trigger_sos', label: 'POST /emergency/trigger-sos' },
+                  { id: 'scribe_audit', label: 'POST /scribe/transcribe-audit' },
+                  { id: 'rehab_exercises', label: 'GET /rehab/exercises' },
+                  { id: 'civic_grievance', label: 'POST /civic/analyze-grievance' },
+                  { id: 'disaster_mesh', label: 'GET /disaster/mesh-nodes' },
                 ].map((ep) => (
                   <button
                     key={ep.id}

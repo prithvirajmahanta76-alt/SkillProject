@@ -7,6 +7,10 @@ from app.api.endpoints import (
     speech,
     translate,
     vision_reader,
+    scribe,
+    rehab,
+    civic,
+    disaster,
 )
 
 api_router = APIRouter()
@@ -18,5 +22,10 @@ api_router.include_router(face_control.router, prefix="/face-control", tags=["Fa
 api_router.include_router(speech.router, prefix="/speech", tags=["Regional Speech & Signs"])
 api_router.include_router(emergency.router, prefix="/emergency", tags=["Emergency & SOS"])
 api_router.include_router(consultation.router, prefix="/consultation", tags=["Consultation & OPD Slip"])
+api_router.include_router(scribe.router, prefix="/scribe", tags=["Ambient Scribe & Audit"])
+api_router.include_router(rehab.router, prefix="/rehab", tags=["Rehabilitation & Biomechanics"])
+api_router.include_router(civic.router, prefix="/civic", tags=["Medico-Legal & Civic Rights"])
+api_router.include_router(disaster.router, prefix="/disaster", tags=["Disaster & Tactical Mesh"])
+
 
 

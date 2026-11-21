@@ -253,6 +253,110 @@ export const api = {
     });
     return response.data;
   },
+
+  // 15. Ambient Clinical Scribe & Hallucination Firewall (SilentAudit)
+  transcribeAndAuditConsultation: async (
+    consultationId = 'OPD-CIVIL-1794156577',
+    patientId = 'PAT-9842',
+    doctorName = 'Dr. Anjali Mishra',
+    rawTranscript = null,
+    transcriptTurns = null,
+    prescribedDrugs = ['Pantocid 40', 'Drotikind-M', 'Amoxicillin 500mg']
+  ) => {
+    const response = await client.post('/scribe/transcribe-audit', {
+      consultation_id: consultationId,
+      patient_id: patientId,
+      doctor_name: doctorName,
+      raw_transcript: rawTranscript,
+      transcript_turns: transcriptTurns,
+      prescribed_drugs: prescribedDrugs,
+    });
+    return response.data;
+  },
+
+  getAmbientNotes: async (consultationId = 'OPD-CIVIL-1794156577') => {
+    const response = await client.get(`/scribe/notes/${consultationId}`);
+    return response.data;
+  },
+
+  // 16. Stroke Rehabilitation & Biomechanical Twin (NeuroGait)
+  getRehabExercises: async () => {
+    const response = await client.get('/rehab/exercises');
+    return response.data;
+  },
+
+  evaluatePose: async (
+    exerciseId = 'SHOULDER_ABDUCTION_RIGHT',
+    landmarks = null,
+    targetAngle = 90.0,
+    currentReps = 0,
+    patientId = 'PAT-9842'
+  ) => {
+    const response = await client.post('/rehab/evaluate-pose', {
+      exercise_id: exerciseId,
+      landmarks,
+      target_angle: targetAngle,
+      current_reps: currentReps,
+      patient_id: patientId,
+    });
+    return response.data;
+  },
+
+  logRehabSession: async (sessionData) => {
+    const response = await client.post('/rehab/log-session', sessionData);
+    return response.data;
+  },
+
+  getRehabHistory: async (patientId = 'PAT-9842') => {
+    const response = await client.get(`/rehab/history/${patientId}`);
+    return response.data;
+  },
+
+  // 17. Medico-Legal & Civic Rights Desk (JanNyaya)
+  analyzeGrievance: async (
+    rawSpeechText,
+    language = 'hi',
+    hospitalName = 'District Civil Hospital',
+    patientId = 'PAT-9842'
+  ) => {
+    const response = await client.post('/civic/analyze-grievance', {
+      raw_speech_text: rawSpeechText,
+      language,
+      hospital_name: hospitalName,
+      patient_id: patientId,
+    });
+    return response.data;
+  },
+
+  generateLegalNotice: async (noticeData) => {
+    const response = await client.post('/civic/generate-notice', noticeData);
+    return response.data;
+  },
+
+  getGrievances: async (patientId = 'PAT-9842') => {
+    const response = await client.get(`/civic/grievances/${patientId}`);
+    return response.data;
+  },
+
+  // 18. Tactical Disaster & Mesh Triage (DisasterMesh / RescueGrid)
+  evaluateStartTriage: async (triageData) => {
+    const response = await client.post('/disaster/evaluate-triage', triageData);
+    return response.data;
+  },
+
+  detectAcousticSignal: async (peakFrequencyHz = 3150.0, amplitudeDb = -18.5, rhythmicIntervalMs = 450) => {
+    const response = await client.post('/disaster/acoustic-detect', {
+      peak_frequency_hz: peakFrequencyHz,
+      amplitude_db: amplitudeDb,
+      rhythmic_interval_ms: rhythmicIntervalMs,
+    });
+    return response.data;
+  },
+
+  getMeshNodes: async () => {
+    const response = await client.get('/disaster/mesh-nodes');
+    return response.data;
+  },
 };
 
 export default api;

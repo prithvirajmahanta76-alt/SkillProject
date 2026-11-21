@@ -88,6 +88,76 @@ def init_db():
         )
     """)
 
+    # 1. Physical Therapy & Stroke Rehabilitation (NeuroGait Twin)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS rehab_sessions (
+            id TEXT PRIMARY KEY,
+            patient_id TEXT NOT NULL,
+            exercise_name TEXT NOT NULL,
+            target_angle REAL NOT NULL,
+            achieved_angle REAL NOT NULL,
+            rom_percentage REAL NOT NULL,
+            reps_completed INTEGER NOT NULL,
+            compensatory_flags TEXT,
+            duration_seconds INTEGER NOT NULL,
+            recovery_trend TEXT,
+            feedback_summary TEXT,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (patient_id) REFERENCES patients (id)
+        )
+    """)
+
+    # 2. Ambient Clinical Scribe & Hallucination Firewall (SilentAudit)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS ambient_notes (
+            id TEXT PRIMARY KEY,
+            consultation_id TEXT NOT NULL,
+            patient_id TEXT NOT NULL,
+            doctor_name TEXT NOT NULL,
+            raw_transcript TEXT NOT NULL,
+            soap_subjective TEXT NOT NULL,
+            soap_objective TEXT NOT NULL,
+            soap_assessment TEXT NOT NULL,
+            soap_plan TEXT NOT NULL,
+            verified_drugs_json TEXT NOT NULL,
+            flagged_drugs_json TEXT NOT NULL,
+            audit_score REAL NOT NULL,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (consultation_id) REFERENCES consultations (id)
+        )
+    """)
+
+    # 3. Medico-Legal & Disability Rights Desk (JanNyaya)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS civic_grievances (
+            id TEXT PRIMARY KEY,
+            patient_id TEXT NOT NULL,
+            grievance_type TEXT NOT NULL,
+            narrative TEXT NOT NULL,
+            target_entity TEXT NOT NULL,
+            statutory_sections_json TEXT NOT NULL,
+            notice_body TEXT NOT NULL,
+            status TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (patient_id) REFERENCES patients (id)
+        )
+    """)
+
+    # 4. Tactical Disaster & Mesh Triage (DisasterMesh / RescueGrid)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS disaster_triage (
+            id TEXT PRIMARY KEY,
+            casualty_tag TEXT NOT NULL,
+            start_triage_color TEXT NOT NULL,
+            respiratory_rate INTEGER NOT NULL,
+            perfusion_radial TEXT NOT NULL,
+            mental_status TEXT NOT NULL,
+            location_mesh_node TEXT NOT NULL,
+            acoustic_alert TEXT,
+            created_at TEXT NOT NULL
+        )
+    """)
+
     # Pre-seed Default Benchmark Patient if not present
     cursor.execute("SELECT id FROM patients WHERE id = 'PAT-9842'")
     if not cursor.fetchone():
@@ -106,11 +176,12 @@ def init_db():
             time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         ))
 
+    _now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
     # Pre-seed Default OPD Consultation referenced by App.jsx (OPD-CIVIL-1794156577)
     cursor.execute("SELECT id FROM consultations WHERE id = 'OPD-CIVIL-1794156577'")
     if not cursor.fetchone():
         import hashlib as _hashlib
-        _now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         _payload = "OPD-CIVIL-1794156577|91-4829-1039-4820|Severe acute abdominal pain|Dr. Anjali Mishra|" + _now
         _hash = _hashlib.sha256(_payload.encode()).hexdigest()
         _rx = json.dumps([
@@ -140,6 +211,103 @@ def init_db():
             "Patient examined via SignBridge Universal Two-Way Kiosk. Vitals stable. Advised ultrasound abdomen if pain persists. No beta-lactam antibiotics prescribed (documented Penicillin allergy).",
             _hash,
             _now,
+        ))
+
+    # Pre-seed Default Ambient Scribe Note
+    cursor.execute("SELECT id FROM ambient_notes WHERE id = 'AMB-NOTE-101'")
+    if not cursor.fetchone():
+        cursor.execute("""
+            INSERT INTO ambient_notes (
+                id, consultation_id, patient_id, doctor_name, raw_transcript,
+                soap_subjective, soap_objective, soap_assessment, soap_plan,
+                verified_drugs_json, flagged_drugs_json, audit_score, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "AMB-NOTE-101",
+            "OPD-CIVIL-1794156577",
+            "PAT-9842",
+            "Dr. Anjali Mishra",
+            "Doctor: Where is the pain? Patient signs stomach ache for two days. Doctor: Any nausea? Patient nods yes. Doctor: Let's give Pantoprazole 40mg before breakfast and Drotikind for spasm. Avoid Amoxicillin due to penicillin allergy.",
+            "Patient reports sharp epigastric pain radiating to lower abdomen for 48 hours. Mild nausea present, aggravated after spicy meals.",
+            "Abdomen soft, tenderness localized at epigastrium. No rebound tenderness. Vitals: BP 124/82, HR 76 bpm, SpO2 98%.",
+            "Acute gastritis with functional dyspepsia (ICD-10 R10.9). Documented Penicillin allergy confirmed.",
+            "Tab Pantocid 40mg OD before breakfast x 5 days. Tab Drotikind-M SOS. Ultrasound Whole Abdomen if symptoms persist.",
+            json.dumps([
+                {"drug": "Pantocid 40 (Pantoprazole 40mg)", "spoken_timestamp": "00:42", "confidence": 0.99, "status": "VERIFIED_SPOKEN"},
+                {"drug": "Drotikind-M (Drotaverine + Mefenamic)", "spoken_timestamp": "00:48", "confidence": 0.97, "status": "VERIFIED_SPOKEN"}
+            ]),
+            json.dumps([]),
+            100.0,
+            _now
+        ))
+
+    # Pre-seed Default Rehab Session (NeuroGait)
+    cursor.execute("SELECT id FROM rehab_sessions WHERE id = 'REHAB-SES-882'")
+    if not cursor.fetchone():
+        cursor.execute("""
+            INSERT INTO rehab_sessions (
+                id, patient_id, exercise_name, target_angle, achieved_angle,
+                rom_percentage, reps_completed, compensatory_flags, duration_seconds,
+                recovery_trend, feedback_summary, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "REHAB-SES-882",
+            "PAT-9842",
+            "Right Shoulder Abduction (Post-Stroke)",
+            90.0,
+            85.2,
+            94.6,
+            12,
+            json.dumps(["Mild Lateral Trunk Lean (+3 deg)"]),
+            180,
+            "POSITIVE_RECOVERY (+12% ROM vs last week)",
+            "Excellent lateral control. Minimal cervical compensation detected. Smooth concentric arc.",
+            _now
+        ))
+
+    # Pre-seed Default Medico-Legal Grievance (JanNyaya)
+    cursor.execute("SELECT id FROM civic_grievances WHERE id = 'GRV-NHA-2026-09'")
+    if not cursor.fetchone():
+        cursor.execute("""
+            INSERT INTO civic_grievances (
+                id, patient_id, grievance_type, narrative, target_entity,
+                statutory_sections_json, notice_body, status, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "GRV-NHA-2026-09",
+            "PAT-9842",
+            "Ayushman Bharat (PM-JAY) Cashless Denial",
+            "Hospital billing desk demanded out-of-pocket cash deposit of ₹15,000 despite active Golden Card verification for emergency appendicitis admission.",
+            "District Civil Hospital TPA Desk",
+            json.dumps([
+                {"act": "Clinical Establishments (Registration and Regulation) Act, 2010", "section": "Section 12(2)", "provision": "Mandatory emergency stabilization without advance payment."},
+                {"act": "Rights of Persons with Disabilities Act, 2016", "section": "Section 25", "provision": "Barrier-free healthcare access and non-discrimination for deaf persons."},
+                {"act": "Consumer Protection Act, 2019", "section": "Section 2(47)", "provision": "Unfair trade practice in medical service delivery."}
+            ]),
+            "LEGAL DEMAND NOTICE: To the Medical Superintendent, re illegal denial of cashless PM-JAY package and refund demand of unauthorized deposit.",
+            "RESOLVED_COMPLIANT",
+            _now
+        ))
+
+    # Pre-seed Default Disaster Triage Record (DisasterMesh)
+    cursor.execute("SELECT id FROM disaster_triage WHERE id = 'TS-NODE-RED-01'")
+    if not cursor.fetchone():
+        cursor.execute("""
+            INSERT INTO disaster_triage (
+                id, casualty_tag, start_triage_color, respiratory_rate,
+                perfusion_radial, mental_status, location_mesh_node,
+                acoustic_alert, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "TS-NODE-RED-01",
+            "Casualty #104 (Trauma / Entrapped)",
+            "RED_IMMEDIATE",
+            34,
+            "WEAK_DELAYED (>2s capillary refill)",
+            "ALTERED_CONFUSED",
+            "Mesh Beacon #3 (North Ward Roof)",
+            "High-Frequency SOS Whistle (3150 Hz detected)",
+            _now
         ))
 
     conn.commit()
